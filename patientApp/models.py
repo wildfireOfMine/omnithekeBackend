@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 class Patient(models.Model):
     djangoUser = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
-    firstSurname = models.CharField(max_length=120, null=False, blank=False)
-    secondSurname = models.CharField(max_length=120, null=False, blank=False)
+    firstSurname = models.CharField(max_length=120, null=True, blank=True)
+    secondSurname = models.CharField(max_length=120, null=True, blank=True)
     email = models.EmailField(null=False, blank=False)
     birthdate = models.DateField()
     identityDocument = models.CharField(max_length=20, unique=True)
