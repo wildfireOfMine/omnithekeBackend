@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'adminApp',
     'doctorApp',
     'hospitalApp',
+    'patientApp',
     'rest_framework'
 ]
 
