@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'doctorApp',
     'hospitalApp',
     'patientApp',
+    'authApp',
     'rest_framework',
     'drf_yasg',
 ]
