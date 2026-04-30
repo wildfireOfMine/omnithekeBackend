@@ -6,5 +6,4 @@ from adminApp import views
 urlpatterns = [
     path("", views.adminView.as_view()),
     path("<int:pk>/", views.adminView.as_view()),
-    path('login/', TokenObtainPairView.as_view()),
 ]

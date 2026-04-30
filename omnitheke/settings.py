@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'patientApp',
     'authApp',
     'rest_framework',
-    'drf_yasg',
+    'drf_spectacular',
     'corsheaders',
 ]
 
@@ -67,7 +67,8 @@ REST_FRAMEWORK={
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT={
@@ -75,6 +76,13 @@ SIMPLE_JWT={
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Omnitheke API',
+    'DESCRIPTION': 'API Docs for Omnitheke',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 ROOT_URLCONF = 'omnitheke.urls'
 
