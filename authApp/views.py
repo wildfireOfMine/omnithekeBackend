@@ -25,3 +25,27 @@ class registerView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class userView(APIView):
+    @extend_schema(
+        summary="Lists all users",
+        description="",
+        request=RegisterSerializer,
+        responses=RegisterSerializer(many=True),
+    )
+    def get(self, request):
+        users = User.objects.all()
+        serializer = RegisterSerializer(users, many=True)
+        return Response(serializer.data)
+
+class userViewPK(APIView):
+    @extend_schema(
+        summary="List an user",
+        description="",
+        request=RegisterSerializer,
+        responses=RegisterSerializer(many=True),
+    )
+    def get(self, request, pk):
+        user = User.objects.get(pk=pk)
+        serializer = RegisterSerializer(user)
+        return Response(serializer.data)
