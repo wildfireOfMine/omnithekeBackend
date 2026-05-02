@@ -1,6 +1,8 @@
 from django.db import models
 from adminApp.models import Person
 from django.contrib.auth.models import User
+from patientApp.models import Patient, Appointment, Incident
+from hospitalApp.models import Hospital
 
 # Create your models here.
 class Doctor(Person):
@@ -9,3 +11,25 @@ class Doctor(Person):
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)
+    
+class Vaccine(models.Model):
+    identityCode = models.CharField(20, unique=True)
+    name = models.CharField(max_length=100)
+    company = models.CharField(max_length=100, blank=True)
+    sideEffects = models.TextField(blank=True)
+
+    def __str__(self):
+        return "%s - %s" % (self.identityCode, self.name)
+
+class Report(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="reports")
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="reports")
+    subject = models.CharField(max_length=100)
+    content = models.TextField(max_length=3500)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name="reports", null=True, blank=True)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name="reports")
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name="reports", null=True, blank=True)
+    reportTimestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "REPORT %s: %s - %s" % (self.pk, self.subject, self.patient)

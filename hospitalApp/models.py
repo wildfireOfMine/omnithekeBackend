@@ -6,8 +6,13 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Hospital(models.Model):
     identityCode = models.CharField(20, unique=True)
-    name = models.CharField(100)
-    address = models.CharField(200)
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=200)
+    city = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postCode = models.CharField(max_length=15)
+    telephone = models.CharField(max_length=15)
+    fax = models.CharField(max_length=50, null=True, blank=True)
     administrator = models.ForeignKey(Administrator, on_delete=models.CASCADE, related_name="hospitals")
 
     def __str__(self):

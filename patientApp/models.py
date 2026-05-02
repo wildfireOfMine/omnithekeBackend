@@ -39,7 +39,7 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments")
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointments")
     comments = models.CharField(max_length=100)
-    appointmentCreation = models.DateTimeField(auto_now_add=True)
+    appointmentTimestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return "%s - %s" % (self.appointmentCreation, self.patient)
@@ -53,13 +53,13 @@ class Incident(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.patient, self.beginningDate)
-
-class Vaccine(models.Model):
-    identityCode = models.CharField(20, unique=True)
-    name = models.CharField(max_length=100)
-    company = models.CharField(max_length=100, blank=True)
-    sideEffects = models.TextField(blank=True)
+    
+class Message(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="messages")
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="messages")
+    subject = models.CharField(max_length=100)
+    content = models.TextField(max_length=3500)
+    messageTimestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %s" % (self.identityCode, self.name)
-
+        return "%s - %s" % (self.subject, self.patient)
