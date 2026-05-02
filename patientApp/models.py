@@ -1,5 +1,5 @@
 from django.db import models
-from doctorApp.models import Doctor
+from doctorApp.models import Doctor, Vaccine
 from adminApp.models import Person
 from django.contrib.auth.models import User
 
@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 class Patient(Person):
     doctors = models.ManyToManyField(Doctor, related_name="patients")
     bloodType = models.CharField(max_length=4, blank=True, null=True)
-    vaccinations = models.ManyToManyField("Vaccine", related_name="patients", blank=True)
+    vaccinations = models.ManyToManyField(Vaccine, related_name="patients", blank=True)
     unrelatedClinicalData = models.TextField(max_length=500, blank=True, null=True)
 
     def __str__(self):
