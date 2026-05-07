@@ -11,7 +11,7 @@ class Doctor(Person):
         return "%s, %s" % (self.firstSurname, self.name)
     
 class Vaccine(models.Model):
-    identityCode = models.CharField(20, unique=True)
+    identityCode = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=100)
     company = models.CharField(max_length=100, blank=True)
     sideEffects = models.TextField(blank=True)

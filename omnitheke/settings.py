@@ -113,6 +113,17 @@ DATABASES = {
     "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
 
+""" DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get('PGDATABASE'),
+        "USER": os.environ.get('PGUSER'),
+        "PASSWORD": os.environ.get('PGPASSWORD'),
+        "HOST": os.environ.get('PGHOST'),
+        "PORT": os.environ.get('DB_PORT'),
+    }
+} """
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

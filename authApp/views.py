@@ -13,8 +13,8 @@ class registerView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        summary="",
-        description="",
+        summary="POST a User",
+        description="Register a user in the database",
         request=RegisterSerializer,
         responses=RegisterSerializer(many=True),
     )
@@ -28,8 +28,8 @@ class registerView(APIView):
 
 class userView(APIView):
     @extend_schema(
-        summary="Lists all users",
-        description="",
+        summary="GET all Users",
+        description="Get all users in the database",
         request=RegisterSerializer,
         responses=RegisterSerializer(many=True),
     )
@@ -40,8 +40,8 @@ class userView(APIView):
 
 class userViewPK(APIView):
     @extend_schema(
-        summary="List an user",
-        description="",
+        summary="GET a User",
+        description="Get a user from a PK",
         request=RegisterSerializer,
         responses=RegisterSerializer(many=True),
     )

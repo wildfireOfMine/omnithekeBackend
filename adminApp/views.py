@@ -18,6 +18,8 @@ class adminView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
+        summary="GET all Administrators",
+        description="Get a list of all administrators",
         request=AdministratorSerializer,
         responses={201: AdministratorSerializer, 400: dict},
     )
@@ -27,6 +29,8 @@ class adminView(APIView):
         return Response(serializer.data)
 
     @extend_schema(
+        summary="POST an Administrator",
+        description="Post a new administrator",
         request=AdministratorSerializer,
         responses={201: AdministratorSerializer, 400: dict},
     )
@@ -45,8 +49,8 @@ class doctorView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        summary="",
-        description="",
+        summary="GET all Doctors",
+        description="Get a list of all doctors",
         responses=DoctorSerializer(many=True),
     )
     def get(self, request, pk=None):
@@ -60,6 +64,8 @@ class doctorView(APIView):
             return Response(serializer.data)
 
     @extend_schema(
+        summary="POST a new doctor",
+        description="Post a new doctor in the database",
         request=DoctorSerializer,
         responses={201: DoctorSerializer, 400: dict},
     )
@@ -77,6 +83,8 @@ class doctorViewPK(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
+        summary="GET a Doctor",
+        description="Get a doctor from a PK",
         responses=DoctorSerializer(many=False),
     )
     def get(self, request, pk):
@@ -86,6 +94,8 @@ class doctorViewPK(APIView):
 
 
     @extend_schema(
+        summary="PUT a Doctor",
+        description="Put a doctor from a PK",
         request=DoctorSerializer,
         responses={201: DoctorSerializer, 400: dict},
     )
@@ -99,6 +109,8 @@ class doctorViewPK(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
+        summary="PATCH a Doctor",
+        description="Patch a doctor from a PK",
         request=DoctorSerializer,
         responses={201: DoctorSerializer, 400: dict},
     )
@@ -112,6 +124,8 @@ class doctorViewPK(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
+        summary="DELETE a Doctor",
+        description="Delete a doctor from a PK",
         responses={204: None},
     )
     def delete(self, request, pk):
@@ -126,8 +140,8 @@ class patientView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        summary="",
-        description="",
+        summary="GET all Patients",
+        description="Get a list of all patients",
         responses=PatientSerializer(many=True),
     )
     def get(self, request, pk=None):
@@ -141,6 +155,8 @@ class patientView(APIView):
             return Response(serializer.data)
 
     @extend_schema(
+        summary="POST a new Patient",
+        description="Post a new patient in the database",
         request=PatientSerializer,
         responses={201: PatientSerializer, 400: dict},
     )
@@ -157,6 +173,8 @@ class patientViewPK(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
+        summary="GET a Patient",
+        description="Get a Patient from a PK",
         responses=PatientSerializer(many=False),
     )
     def get(self, request, pk):
@@ -166,6 +184,8 @@ class patientViewPK(APIView):
 
 
     @extend_schema(
+        summary="PUT a Patient",
+        description="Put a Patient from a PK",
         request=PatientSerializer,
         responses={201: PatientSerializer, 400: dict},
     )
@@ -179,6 +199,8 @@ class patientViewPK(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
+        summary="PATCH a Patient",
+        description="Patch a Patient from a PK",
         request=PatientSerializer,
         responses={201: PatientSerializer, 400: dict},
     )
@@ -192,6 +214,8 @@ class patientViewPK(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
+        summary="DELETE a Patient",
+        description="Delete a Patient from a PK",
         responses={204: None},
     )
     def delete(self, request, pk):
