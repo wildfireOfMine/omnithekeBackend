@@ -109,11 +109,11 @@ WSGI_APPLICATION = 'omnitheke.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
-}
-
 """ DATABASES = {
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+} """
+
+DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get('PGDATABASE'),
@@ -122,7 +122,7 @@ DATABASES = {
         "HOST": os.environ.get('PGHOST'),
         "PORT": os.environ.get('DB_PORT'),
     }
-} """
+}
 
 
 # Password validation
@@ -160,6 +160,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
