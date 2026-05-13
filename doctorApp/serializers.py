@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from adminApp.models import Administrator
 from doctorApp.models import Doctor, Vaccine
-from patientApp.models import Patient
+from patientApp.models import Patient, Appointment
 
 class AdministratorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,4 +26,9 @@ class NewDoctorSerializer(serializers.ModelSerializer):
 class VaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vaccine
+        fields = "__all__"
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
         fields = "__all__"
