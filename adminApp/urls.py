@@ -4,7 +4,6 @@ from django.urls import path
 from adminApp import views
 
 urlpatterns = [
-
     path("doctor/", views.doctorView.as_view()),
     path("doctor/<int:pk>/", views.doctorViewPK.as_view()),
     path("patient/", views.patientView.as_view()),

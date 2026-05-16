@@ -19,7 +19,7 @@ class Hospital(models.Model):
         return self.name
 
 class Department(models.Model):
-    name = models.CharField(100)
+    name = models.CharField(max_length=100)
     doctors = models.ManyToManyField(Doctor, related_name="departments")
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name="departments")
 

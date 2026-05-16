@@ -8,4 +8,5 @@ urlpatterns = [
     path('login/', views.ObtainToken.as_view()),
     path('users/', views.userView.as_view()),
     path('users/<int:pk>', views.userViewPK.as_view()),
+    path('admins/', views.adminView.as_view())
 ]
