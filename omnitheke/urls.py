@@ -24,6 +24,7 @@ urlpatterns = [
     path('djangoAdmin/', admin.site.urls),
     path('admin/api/', include('adminApp.urls')),
     path('doctor/api/', include('doctorApp.urls')),
+    path('patient/api/', include('patientApp.urls')),
     path('auth/api/', include('authApp.urls')),
     path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
