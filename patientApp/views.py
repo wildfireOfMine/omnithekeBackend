@@ -10,8 +10,8 @@ from rest_framework import permissions, status
 class myProfileView(APIView):
 
     @extend_schema(
-        summary="GET your Pacient Profile",
-        description="Get your pacient profile with all your attributes",
+        summary="GET your Patient Profile",
+        description="Get your patient profile with all your attributes",
         responses=PatientSerializer,
     )
     def get(self, request):
