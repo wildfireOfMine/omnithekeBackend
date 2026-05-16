@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from adminApp.models import Administrator
+from doctorApp.models import Doctor
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,3 +21,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+    
+class TokenSerializer(TokenObtainPairSerializer):
+    
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+        role = None
+        
+
+        if hasattr(user, 'doctor'):
+            role = 'doctor'
+        elif hasattr(user, 'patient'):
+            role = 'patient'
+        elif user.is_staff:
+            role = 'admin'
+        data['role'] = role
+
+        return data
