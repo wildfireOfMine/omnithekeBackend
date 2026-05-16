@@ -244,6 +244,12 @@ class appointmentsPKView(APIView):
         appointment = get_object_or_404(appointment, pk=pk)
         appointment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class reportsView(APIView):
+    pass
+
+class reportsPKView(APIView):
+    pass
 
 class incidentsView(APIView):
     @extend_schema(
