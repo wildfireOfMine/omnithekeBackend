@@ -5,7 +5,7 @@ from authApp import views
 
 urlpatterns = [
     path('register/', views.registerView.as_view()),
-    path('login/', TokenObtainPairView.as_view()),
+    path('login/', views.ObtainToken.as_view()),
     path('users/', views.userView.as_view()),
     path('users/<int:pk>', views.userViewPK.as_view()),
 ]

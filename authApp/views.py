@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
-from authApp.serializers import LoginSerializer, RegisterSerializer
+from authApp.serializers import LoginSerializer, RegisterSerializer, TokenSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 
@@ -49,3 +50,7 @@ class userViewPK(APIView):
         user = User.objects.get(pk=pk)
         serializer = RegisterSerializer(user)
         return Response(serializer.data)
+    
+class ObtainToken(TokenObtainPairView):
+
+    serializer_class = TokenSerializer

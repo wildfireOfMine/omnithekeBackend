@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
-from doctorApp.serializers import DoctorSerializer, PatientSerializer, NewDoctorSerializer, VaccineSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer
+from adminApp.serializers import PatientSerializer
 from rest_framework.response import Response
 
 # Create your views here.
