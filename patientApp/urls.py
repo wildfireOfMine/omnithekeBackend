@@ -4,4 +4,5 @@ from patientApp import views
 
 urlpatterns = [
     path("myPatientProfile/", views.myProfileView.as_view()),
+    path("myDoctors/", views.myDoctorsView.as_view()),
 ]

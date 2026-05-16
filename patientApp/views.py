@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
-from adminApp.serializers import PatientSerializer
+from adminApp.serializers import PatientSerializer, DoctorSerializer
+from doctorApp.models import Doctor
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
@@ -36,7 +37,11 @@ class myProfileView(APIView):
 
 class myDoctorsView(APIView):
     def get(self, request):
-        pass
+        patient = request.user.patient
+        doctors = Doctor.objects.filter(patients=patient)
+        print(doctors)
+        serializer = DoctorSerializer(doctors, many=True)
+        return Response(serializer.data)
 
 class myIncidentsView(APIView):
     pass
