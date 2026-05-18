@@ -163,7 +163,7 @@ class vaccinesPKView(APIView):
         responses=VaccineSerializer,
     )
     def delete(self, request, pk):
-        vaccine = get_object_or_404(vaccine, pk=pk)
+        vaccine = get_object_or_404(Vaccine, pk=pk)
         vaccine.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
