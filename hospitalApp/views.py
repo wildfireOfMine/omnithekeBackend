@@ -195,7 +195,7 @@ class floorView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class floorViewPK(APIView):
+class floorPKView(APIView):
     @extend_schema(
         summary="GET a Floor",
         description="Get a floor from the database",
@@ -273,7 +273,7 @@ class roomView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class roomViewPK(APIView):
+class roomPKView(APIView):
     @extend_schema(
         summary="GET a Room",
         description="Get a room from the database",
