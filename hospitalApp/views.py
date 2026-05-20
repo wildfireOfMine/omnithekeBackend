@@ -31,7 +31,9 @@ class hospitalView(APIView):
         responses={201: HospitalSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = HospitalSerializer(data=request.data)
+        data = request.data.copy()
+        data["administrator"] = request.user.administrator.id
+        serializer = HospitalSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -346,7 +348,6 @@ class administratorView(APIView):
     )
     
     def post(self, request):
-        
         data = request.data.copy()
         data["djangoUser"] = request.user.id
         data["email"] = request.user.email
