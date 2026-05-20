@@ -6,6 +6,7 @@ from hospitalApp.serializers import HospitalSerializer, DepartmentSerializer, Fl
 from adminApp.serializers import AdministratorSerializer
 from adminApp.models import Administrator
 from rest_framework import permissions, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # Create your views here.
@@ -343,8 +344,13 @@ class administratorView(APIView):
         request=AdministratorSerializer,
         responses={201: AdministratorSerializer, 400: dict},
     )
+    
     def post(self, request):
-        serializer = AdministratorSerializer(data=request.data)
+        
+        data = request.data.copy()
+        data["djangoUser"] = request.user.id
+        data["email"] = request.user.email
+        serializer = AdministratorSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
