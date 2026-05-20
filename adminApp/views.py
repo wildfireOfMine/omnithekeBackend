@@ -13,37 +13,6 @@ from drf_spectacular.utils import extend_schema
 
 # Create your views here.
 
-class adminView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="GET all Administrators",
-        description="Get a list of all administrators",
-        request=AdministratorSerializer,
-        responses={201: AdministratorSerializer, 400: dict},
-    )
-    def get(self, request):
-        admins = Administrator.objects.all()
-        serializer = AdministratorSerializer(admins, many=True)
-        return Response(serializer.data)
-
-    @extend_schema(
-        summary="POST an Administrator",
-        description="Post a new administrator",
-        request=AdministratorSerializer,
-        responses={201: AdministratorSerializer, 400: dict},
-    )
-    def post(self, request):
-        serializer = AdministratorSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 class doctorView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -56,6 +25,8 @@ class doctorView(APIView):
     def get(self, request, pk=None):
         if pk is None:
             doctors = Doctor.objects.all()
+            doctors2 = Doctor.objects.filter(departments__hospital__administrator=request.user.administrator).distinct()
+            print(doctors2)
             serializer = DoctorSerializer(doctors, many=True)
             return Response(serializer.data)
         else:

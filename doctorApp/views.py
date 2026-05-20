@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import DoctorSerializer, PatientSerializer
-from doctorApp.serializers import NewDoctorSerializer, VaccineSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer
-from doctorApp.models import Vaccine
+from doctorApp.serializers import NewDoctorSerializer, VaccineSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
+from doctorApp.models import Vaccine, Report
 from patientApp.models import Patient, Appointment, Incident, Message
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -163,7 +163,7 @@ class vaccinesPKView(APIView):
         responses=VaccineSerializer,
     )
     def delete(self, request, pk):
-        vaccine = get_object_or_404(vaccine, pk=pk)
+        vaccine = get_object_or_404(Vaccine, pk=pk)
         vaccine.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -246,10 +246,81 @@ class appointmentsPKView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class reportsView(APIView):
-    pass
+    @extend_schema(
+        summary="GET your Report",
+        description="Get the reports with your doctor from the database",
+        responses=ReportSerializer
+    )
+    def get(self, request):
+        reports = Report.objects.filter(doctor=request.user.doctor)
+        serializer = ReportSerializer(reports, many=True)
+        return Response(serializer.data)
+    
+    @extend_schema(
+        summary="POST a Report",
+        description="Post a report into the database",
+        request=ReportSerializer,
+        responses={201: ReportSerializer, 400: dict},
+    )
+    def post(self, request):
+        serializer = ReportSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class reportsPKView(APIView):
-    pass
+    @extend_schema(
+        summary="GET a Report",
+        description="Get a report with your doctor from the database",
+        responses=ReportSerializer
+    )
+    def get(self, request, pk):
+        report = Report.objects.filter(pk=pk)
+        serializer = ReportSerializer(report)
+        return Response(serializer.data)
+    
+    @extend_schema(
+        summary="PUT a Report",
+        description="Put a report with your doctor from the database",
+        request=ReportSerializer,
+        responses={201: ReportSerializer, 400: dict},
+    )
+    def put(self, request, pk):
+        report = Report.objects.get(pk=pk)
+        serializer = ReportSerializer(report, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="PATCH a Report",
+        description="PATCH a report with your doctor from the database",
+        request=ReportSerializer,
+        responses={201: ReportSerializer, 400: dict},
+    )
+    def patch(self, request, pk):
+        report = Report.objects.get(pk=pk)
+        serializer = ReportSerializer(report, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="DELETE an Appointment",
+        description="Delete an appointment with your doctor from the database",
+        request=ReportSerializer,
+        responses=ReportSerializer,
+    )
+    def delete(self, request, pk):
+        appointment = get_object_or_404(appointment, pk=pk)
+        appointment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class incidentsView(APIView):
     @extend_schema(

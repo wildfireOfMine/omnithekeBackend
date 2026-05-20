@@ -19,7 +19,7 @@ class Hospital(models.Model):
         return self.name
 
 class Department(models.Model):
-    name = models.CharField(100)
+    name = models.CharField(max_length=100)
     doctors = models.ManyToManyField(Doctor, related_name="departments")
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name="departments")
 
@@ -34,6 +34,7 @@ class Floor(models.Model):
         return "%s, %s" % (self.floorNumber, self.hospital.name)
     
 class Room(models.Model):
+    specialCode = models.CharField(max_length=20, null=True, blank=True)
     roomNumber = models.IntegerField()
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE, related_name="rooms")
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="rooms", null=True, blank=True)

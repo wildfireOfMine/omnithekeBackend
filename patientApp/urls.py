@@ -3,5 +3,10 @@ from django.urls import path
 from patientApp import views
 
 urlpatterns = [
-    path("myPatientProfile/", views.myProfile.as_view()),
+    path("myPatientProfile/", views.myProfileView.as_view()),
+    path("myDoctors/", views.myDoctorsView.as_view()),
+    path("myIncidents/", views.myIncidentsView.as_view()),
+    path("myReports/", views.myReportsView.as_view()),
+    path("messages/", views.messagesView.as_view()),
+    path("vaccines/", views.vaccinesView.as_view()),
 ]

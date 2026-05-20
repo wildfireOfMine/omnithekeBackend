@@ -7,6 +7,10 @@ from authApp.serializers import LoginSerializer, RegisterSerializer, TokenSerial
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from adminApp.serializers import AdministratorSerializer
+from adminApp.models import Administrator
 
 # Create your views here.
 
@@ -54,3 +58,32 @@ class userViewPK(APIView):
 class ObtainToken(TokenObtainPairView):
 
     serializer_class = TokenSerializer
+
+class adminView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET all Administrators",
+        description="Get a list of all administrators",
+        request=AdministratorSerializer,
+        responses={201: AdministratorSerializer, 400: dict},
+    )
+    def get(self, request):
+        admins = Administrator.objects.all()
+        serializer = AdministratorSerializer(admins, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="POST an Administrator",
+        description="Post a new administrator",
+        request=AdministratorSerializer,
+        responses={201: AdministratorSerializer, 400: dict},
+    )
+    def post(self, request):
+        serializer = AdministratorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
