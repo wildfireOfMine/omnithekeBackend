@@ -13,7 +13,7 @@ class Hospital(models.Model):
     postCode = models.CharField(max_length=15, null=True, blank=True)
     telephone = models.CharField(max_length=15, null=True, blank=True)
     fax = models.CharField(max_length=50, null=True, blank=True)
-    administrator = models.ForeignKey(Administrator, on_delete=models.CASCADE, related_name="hospitals")
+    administrator = models.OneToOneField(Administrator, on_delete=models.CASCADE, related_name="hospital")
 
     def __str__(self):
         return self.name
