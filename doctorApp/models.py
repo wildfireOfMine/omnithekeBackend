@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 class Doctor(Person):
     educationalBackground = models.TextField(max_length=500)
     cv = models.FileField(null=True, blank=True)
+    hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="doctors", null=True, blank=True)
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)

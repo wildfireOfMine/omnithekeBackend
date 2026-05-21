@@ -9,11 +9,18 @@ class AdministratorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class DoctorSerializer(serializers.ModelSerializer):
+    cv = serializers.FileField(required=False, allow_null=True)
     class Meta:
         model = Doctor
         fields = "__all__"
     
 class PatientSerializer(serializers.ModelSerializer):
+    doctors = serializers.PrimaryKeyRelatedField(
+        queryset=Doctor.objects.all(),
+        many=True,
+        required=False,
+        allow_empty=True
+    )
     class Meta:
         model = Patient
         fields = "__all__"

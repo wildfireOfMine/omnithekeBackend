@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.permissions import IsAuthenticated
+from authApp.serializers import RegisterSerializer
 from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from patientApp.models import Patient
@@ -10,6 +11,7 @@ from hospitalApp.models import Hospital
 from adminApp.serializers import AdministratorSerializer, DoctorSerializer, PatientSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
+from django.db import transaction
 
 # Create your views here.
 
@@ -23,16 +25,10 @@ class doctorView(APIView):
         responses=DoctorSerializer(many=True),
     )
     def get(self, request, pk=None):
-        if pk is None:
-            doctors = Doctor.objects.all()
-            doctors2 = Doctor.objects.filter(departments__hospital__administrator=request.user.administrator).distinct()
-            print(doctors2)
-            serializer = DoctorSerializer(doctors, many=True)
-            return Response(serializer.data)
-        else:
-            doctor = Doctor.objects.get(pk=pk)
-            serializer = DoctorSerializer(doctor)
-            return Response(serializer.data)
+        hospital = request.user.administrator.hospital
+        doctors = Doctor.objects.filter(hospital=hospital)
+        serializer = DoctorSerializer(doctors, many=True)
+        return Response(serializer.data)
 
     @extend_schema(
         summary="POST a new doctor",
@@ -41,12 +37,32 @@ class doctorView(APIView):
         responses={201: DoctorSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = DoctorSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+
+            userData = {
+                "username": request.data.get("name"),
+                "email": request.data.get("email"),
+                "password": "12345"
+            }
+            serializerUser = RegisterSerializer(data=userData)
+            serializerUser.is_valid(raise_exception=True)
+            user = serializerUser.save()
+            print(user)
+
+            doctorData = request.data.copy()
+            print(doctorData)
+            doctorData["djangoUser"] = user.pk
+            doctorData["hospital"] = request.user.administrator.hospital.pk
+            serializerDoctor = DoctorSerializer(data=doctorData)
+            serializerDoctor.is_valid(raise_exception=True) 
+
+            
+            if serializerDoctor.is_valid():
+                serializerDoctor.save()
+                return Response(serializerDoctor.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializerDoctor.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 class doctorViewPK(APIView):
@@ -116,14 +132,10 @@ class patientView(APIView):
         responses=PatientSerializer(many=True),
     )
     def get(self, request, pk=None):
-        if pk is None:
-            patients = Patient.objects.all()
-            serializer = PatientSerializer(patients, many=True)
-            return Response(serializer.data)
-        else:
-            patient = Patient.objects.get(pk=pk)
-            serializer = PatientSerializer(patient)
-            return Response(serializer.data)
+        hospital = request.user.administrator.hospital
+        patients = Patient.objects.filter(hospital=hospital)
+        serializer = PatientSerializer(patients, many=True)
+        return Response(serializer.data)
 
     @extend_schema(
         summary="POST a new Patient",
@@ -132,12 +144,32 @@ class patientView(APIView):
         responses={201: PatientSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = PatientSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        with transaction.atomic():
+
+            userData = {
+                "username": request.data.get("name"),
+                "email": request.data.get("email"),
+                "password": "12345"
+            }
+            serializerUser = RegisterSerializer(data=userData)
+            serializerUser.is_valid(raise_exception=True)
+            user = serializerUser.save()
+            print(user)
+
+            patientData = request.data.copy()
+            print(patientData)
+            patientData["djangoUser"] = user.pk
+            patientData["hospital"] = request.user.administrator.hospital.pk
+            patientData["doctors"] = []
+            serializerPatient = PatientSerializer(data=patientData)
+            serializerPatient.is_valid(raise_exception=True) 
+
+            
+            if serializerPatient.is_valid():
+                serializerPatient.save()
+                return Response(serializerPatient.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializerPatient.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class patientViewPK(APIView):
     authentication_classes = [JWTAuthentication]
@@ -193,3 +225,14 @@ class patientViewPK(APIView):
         patient = get_object_or_404(Patient, pk=pk)
         patient.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class administratorView(APIView):
+    @extend_schema(
+        summary="GET your Administrator Profile",
+        description="Get your administrator profile",
+        responses=AdministratorSerializer,
+    )
+    def get(self, request):
+        administrator = request.user.administrator
+        serializer = AdministratorSerializer(administrator)
+        return Response(serializer.data)

@@ -9,6 +9,7 @@ class Patient(Person):
     bloodType = models.CharField(max_length=4, blank=True, null=True)
     vaccinations = models.ManyToManyField(Vaccine, related_name="patients", blank=True)
     unrelatedClinicalData = models.TextField(max_length=500, blank=True, null=True)
+    hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="patients", null=True, blank=True)
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)

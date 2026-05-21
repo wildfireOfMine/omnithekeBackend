@@ -330,15 +330,6 @@ class roomPKView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class administratorView(APIView):
-    @extend_schema(
-        summary="GET your Administrator Profile",
-        description="Get your administrator profile",
-        responses=AdministratorSerializer,
-    )
-    def get(self, request):
-        administrator = request.self.administrator
-        serializer = AdministratorSerializer(administrator)
-        return Response(serializer.data)
 
     @extend_schema(
         summary="POST a new Department",
