@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
 from doctorApp.serializers import IncidentSerializer, ReportSerializer, AppointmentSerializer
-from patientApp.serializers import MessageSerializer, AppointmentSerializer, AppointmentTimeSerializer, CreateAppointmentSerializer
+from patientApp.serializers import MessageSerializer, AppointmentSerializer
 from doctorApp.models import Doctor, Report
 from patientApp.models import Incident, Appointment, Message, Appointment, AppointmentTime
 from rest_framework.response import Response
