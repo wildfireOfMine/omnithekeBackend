@@ -1,5 +1,4 @@
 from django.db import models
-from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from django.contrib.auth.models import User
 
@@ -13,7 +12,6 @@ class Hospital(models.Model):
     postCode = models.CharField(max_length=15, null=True, blank=True)
     telephone = models.CharField(max_length=15, null=True, blank=True)
     fax = models.CharField(max_length=50, null=True, blank=True)
-    administrator = models.OneToOneField(Administrator, on_delete=models.CASCADE, related_name="hospital")
 
     def __str__(self):
         return self.name
@@ -26,18 +24,3 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
-class Floor(models.Model):
-    floorNumber = models.IntegerField()
-    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name="floors")
-
-    def __str__(self):
-        return "%s, %s" % (self.floorNumber, self.hospital.name)
-    
-class Room(models.Model):
-    specialCode = models.CharField(max_length=20, null=True, blank=True)
-    roomNumber = models.IntegerField()
-    floor = models.ForeignKey(Floor, on_delete=models.CASCADE, related_name="rooms")
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="rooms", null=True, blank=True)
-
-    def __str__(self):
-        return "%s, %s" % (self.roomNumber, self.floor)

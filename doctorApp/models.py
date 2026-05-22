@@ -6,19 +6,11 @@ from django.contrib.auth.models import User
 class Doctor(Person):
     educationalBackground = models.TextField(max_length=500)
     cv = models.FileField(null=True, blank=True)
-    hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="doctors", null=True, blank=True)
+    hospital = models.ManyToManyField("hospitalApp.Hospital", related_name="doctors")
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)
     
-class Vaccine(models.Model):
-    identityCode = models.CharField(max_length=20, unique=True)
-    name = models.CharField(max_length=100)
-    company = models.CharField(max_length=100, blank=True)
-    sideEffects = models.TextField(blank=True)
-
-    def __str__(self):
-        return "%s - %s" % (self.identityCode, self.name)
 
 class Report(models.Model):
     patient = models.ForeignKey("patientApp.Patient", on_delete=models.CASCADE, related_name="reports")

@@ -2,10 +2,10 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
-from doctorApp.serializers import IncidentSerializer, ReportSerializer, VaccineSerializer, AppointmentSerializer
-from patientApp.serializers import MessageSerializer
-from doctorApp.models import Doctor, Report, Vaccine
-from patientApp.models import Incident, Appointment, Message
+from doctorApp.serializers import IncidentSerializer, ReportSerializer, AppointmentSerializer
+from patientApp.serializers import MessageSerializer, AppointmentSerializer, AppointmentTimeSerializer, CreateAppointmentSerializer
+from doctorApp.models import Doctor, Report
+from patientApp.models import Incident, Appointment, Message, Appointment, AppointmentTime
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
@@ -105,32 +105,6 @@ class messagesView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class vaccinesView(APIView):
-
-    @extend_schema(
-        summary="GET your Vaccines from your Patient",
-        description="Get your vaccines from your patient profile",
-        responses=VaccineSerializer
-    )
-    def get(self, request):
-        patient = request.user.patient
-        vaccines = Vaccine.objects.filter(patient=patient)
-        serializer = VaccineSerializer(vaccines, many=True)
-        return Response(serializer.data)
-
-    @extend_schema(
-        summary="POST a new Message",
-        description="Post a new message in the database",
-        request=VaccineSerializer,
-        responses={201: VaccineSerializer, 400: dict},
-    )
-    def post(self, request):
-        serializer = VaccineSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class appointmentsView(APIView):
 
@@ -158,3 +132,76 @@ class appointmentsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class availableAppointmentsView(APIView):
+
+    @extend_schema(
+        summary="Get available appointments",
+        description="Returns all available appointment slots",
+        responses={200: AppointmentTimeSerializer(many=True)}
+    )
+    def get(self, request):
+
+        available = AppointmentTime.objects.filter(
+            appointment__isnull=True
+        )
+
+        serializer = AppointmentTimeSerializer(
+            available,
+            many=True
+        )
+
+        return Response(serializer.data)
+    
+class bookAppointmentView(APIView):
+
+    @extend_schema(
+        summary="Book appointment",
+        description="Books an available appointment slot",
+        request=CreateAppointmentSerializer,
+        responses={
+            201: AppointmentSerializer,
+            400: dict,
+            404: dict
+        }
+    )
+    def post(self, request, appointment_time_id):
+
+        serializer = CreateAppointmentSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        try:
+
+            appointment_time = AppointmentTime.objects.get(
+                id=appointment_time_id
+            )
+
+        except AppointmentTime.DoesNotExist:
+
+            return Response(
+                {"error": "Horario no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if appointment_time.appointment is not None:
+
+            return Response(
+                {"error": "Horario ocupado"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        appointment = Appointment.objects.create(
+            patient_id=serializer.validated_data["patientId"],
+            comments=serializer.validated_data["comments"]
+        )
+
+        appointment_time.appointment = appointment
+        appointment_time.save()
+
+        return Response(
+            AppointmentSerializer(appointment).data,
+            status=status.HTTP_201_CREATED
+        )

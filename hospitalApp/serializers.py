@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from hospitalApp.models import Hospital, Department, Floor, Room
+from hospitalApp.models import Hospital, Department
 
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,14 +9,4 @@ class HospitalSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = "__all__"
-
-class FloorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Floor
-        fields = "__all__"
-
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
         fields = "__all__"

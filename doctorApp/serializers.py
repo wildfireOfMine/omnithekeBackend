@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from doctorApp.models import Vaccine, Report
+from doctorApp.models import Report
 from patientApp.models import Patient, Appointment, Incident, Message
 
 class NewDoctorSerializer(serializers.ModelSerializer):
@@ -7,10 +7,6 @@ class NewDoctorSerializer(serializers.ModelSerializer):
         model = Patient
         fields = ["doctors"]
 
-class VaccineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vaccine
-        fields = "__all__"
 
 class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:

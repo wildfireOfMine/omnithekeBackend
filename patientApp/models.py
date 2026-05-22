@@ -1,5 +1,5 @@
 from django.db import models
-from doctorApp.models import Doctor, Vaccine
+from doctorApp.models import Doctor
 from adminApp.models import Person
 from django.contrib.auth.models import User
 
@@ -7,43 +7,29 @@ from django.contrib.auth.models import User
 class Patient(Person):
     doctors = models.ManyToManyField(Doctor, related_name="patients")
     bloodType = models.CharField(max_length=4, blank=True, null=True)
-    vaccinations = models.ManyToManyField(Vaccine, related_name="patients", blank=True)
     unrelatedClinicalData = models.TextField(max_length=500, blank=True, null=True)
     hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="patients", null=True, blank=True)
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)
     
-class Calendar(models.Model):
-    month = models.CharField(max_length=20)
-    year = models.IntegerField()
-
-    def __str__(self):
-        return "%s - %s" % (self.month, self.year)
-
-class CalendarDay(models.Model):
-    calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE, related_name="days")
-    day = models.DateField()
-
-    def __str__(self):
-        return "%s - %s" % (self.calendar, self.day)
-
-class CalendarHour(models.Model):
-    calendarDay = models.ForeignKey(CalendarDay, on_delete=models.CASCADE, related_name="hours")
-    hour = models.TimeField()
-    appointment = models.OneToOneField("Appointment", null=True, blank=True, on_delete=models.SET_NULL, related_name="appointment")
-
-    def __str__(self):
-        return "%s - %s" % (self.calendarDay, self.hour)
 
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments")
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointments")
     comments = models.CharField(max_length=100)
     appointmentTimestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return "%s - %s" % (self.appointmentCreation, self.patient)
+
+class AppointmentTime(models.Model):
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointmentTimes", null=True, blank=True)
+    beginning = models.DateTimeField()
+    ending = models.DateTimeField()
+    appointment = models.OneToOneField(Appointment, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.appointment} & {self.beginning}-{self.ending}"
     
 class Incident(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="incidents")
