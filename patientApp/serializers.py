@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from patientApp.models import Message, Appointment, AppointmentTime
+from patientApp.models import Message, Appointment
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:

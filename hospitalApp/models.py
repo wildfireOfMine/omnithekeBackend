@@ -1,5 +1,4 @@
 from django.db import models
-from doctorApp.models import Doctor
 from django.contrib.auth.models import User
 
 # Create your models here.
@@ -18,7 +17,7 @@ class Hospital(models.Model):
 
 class Department(models.Model):
     name = models.CharField(max_length=100)
-    doctors = models.ManyToManyField(Doctor, related_name="departments")
+    doctors = models.ManyToManyField("doctorApp.Doctor", related_name="departments")
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name="departments")
 
     def __str__(self):

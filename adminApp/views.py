@@ -53,7 +53,7 @@ class doctorView(APIView):
             doctorData = request.data.copy()
             print(doctorData)
             doctorData["djangoUser"] = user.pk
-            doctorData["hospital"] = request.user.administrator.hospital.pk
+            doctorData["hospital"] = [request.user.administrator.hospital.pk]
             serializerDoctor = DoctorSerializer(data=doctorData)
             serializerDoctor.is_valid(raise_exception=True) 
 

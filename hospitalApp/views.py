@@ -31,11 +31,14 @@ class hospitalView(APIView):
         responses={201: HospitalSerializer, 400: dict},
     )
     def post(self, request):
-        data = request.data.copy()
-        data["administrator"] = request.user.administrator.id
-        serializer = HospitalSerializer(data=data)
+        serializer = HospitalSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            hospital = serializer.save()
+
+            administrator = request.user.administrator
+            administrator.hospital = hospital
+            administrator.save()
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

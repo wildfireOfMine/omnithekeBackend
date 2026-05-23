@@ -5,7 +5,7 @@ from adminApp.serializers import PatientSerializer, DoctorSerializer
 from doctorApp.serializers import IncidentSerializer, ReportSerializer, AppointmentSerializer
 from patientApp.serializers import MessageSerializer, AppointmentSerializer
 from doctorApp.models import Doctor, Report
-from patientApp.models import Incident, Appointment, Message, Appointment, AppointmentTime
+from patientApp.models import Incident, Appointment, Message, Appointment
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
