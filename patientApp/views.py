@@ -31,7 +31,11 @@ class myProfileView(APIView):
     )
     def put(self, request):
         patient = request.user.patient
-        serializer = PatientSerializer(patient, data=request.data)
+        data = request.data.copy()
+        data["djangoUser"] = patient.djangoUser.pk
+        data["hospital"] = patient.hospital.pk
+        data["doctors"] = list(patient.doctors.values_list("pk", flat=True))
+        serializer = PatientSerializer(patient, data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
