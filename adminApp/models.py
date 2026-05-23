@@ -29,5 +29,7 @@ class Person(models.Model):
     
 class Administrator(Person):
 
+    hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="administrators", null=True, blank=True)
+
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)

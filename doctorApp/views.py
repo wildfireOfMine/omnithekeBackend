@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import DoctorSerializer, PatientSerializer
-from doctorApp.serializers import NewDoctorSerializer, VaccineSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
-from doctorApp.models import Vaccine, Report
+from doctorApp.serializers import NewDoctorSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
+from doctorApp.models import Report
 from patientApp.models import Patient, Appointment, Incident, Message
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -33,7 +33,13 @@ class doctorProfileView(APIView):
     )
     def put(self, request):
         doctor = request.user.doctor
-        serializer = DoctorSerializer(doctor, data=request.data)
+        djangoUser = request.user.doctor.djangoUser.pk
+        data = request.data.copy()
+        data["djangoUser"] = djangoUser
+        data["hospital"] = list(doctor.hospital.values_list("pk", flat=True))
+        print(data)
+        print(data["sex"])
+        serializer = DoctorSerializer(doctor, data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -86,86 +92,6 @@ class addNewDoctorView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class vaccinesView(APIView):
-
-    @extend_schema(
-        summary="GET all Vaccines",
-        description="Get all vaccines from the database",
-        request=VaccineSerializer,
-        responses=VaccineSerializer,
-    )
-    def get(self, request):
-        vaccines = Vaccine.objects.all()
-        serializer = VaccineSerializer(vaccines, many=True)
-        return Response(serializer.data)
-    
-    @extend_schema(
-        summary="POST a Vaccine",
-        description="Post a vaccine into the database",
-        request=VaccineSerializer,
-        responses={201: VaccineSerializer, 400: dict},
-    )
-    def post(self, request):
-        serializer = VaccineSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-class vaccinesPKView(APIView):
-
-    @extend_schema(
-        summary="GET a Vaccine",
-        description="Get a vaccine from the database",
-        request=VaccineSerializer,
-        responses=VaccineSerializer,
-    )
-    def get(self, request, pk):
-        vaccine = Vaccine.objects.get(pk=pk)
-        serializer = VaccineSerializer(vaccine)
-        return Response(serializer.data)
-    
-    @extend_schema(
-        summary="PUT a Vaccine",
-        description="Put a vaccine from the database",
-        request=VaccineSerializer,
-        responses=VaccineSerializer,
-    )
-    def put(self, request, pk):
-        vaccine = Vaccine.objects.get(pk=pk)
-        serializer = VaccineSerializer(vaccine, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @extend_schema(
-        summary="PATCH a Vaccine",
-        description="Patch a vaccine from the database",
-        request=VaccineSerializer,
-        responses=VaccineSerializer,
-    )
-    def patch(self, request, pk):
-        vaccine = Vaccine.objects.get(pk=pk)
-        serializer = VaccineSerializer(vaccine, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @extend_schema(
-        summary="DELETE a Vaccine",
-        description="Delete a vaccine from the database",
-        request=VaccineSerializer,
-        responses=VaccineSerializer,
-    )
-    def delete(self, request, pk):
-        vaccine = get_object_or_404(Vaccine, pk=pk)
-        vaccine.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
     
 class appointmentsView(APIView):
 
@@ -237,8 +163,8 @@ class appointmentsPKView(APIView):
     @extend_schema(
         summary="DELETE an Appointment",
         description="Delete an appointment with your doctor from the database",
-        request=VaccineSerializer,
-        responses=VaccineSerializer,
+        request=AppointmentSerializer,
+        responses=AppointmentSerializer,
     )
     def delete(self, request, pk):
         appointment = get_object_or_404(appointment, pk=pk)

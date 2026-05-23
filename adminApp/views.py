@@ -53,7 +53,7 @@ class doctorView(APIView):
             doctorData = request.data.copy()
             print(doctorData)
             doctorData["djangoUser"] = user.pk
-            doctorData["hospital"] = request.user.administrator.hospital.pk
+            doctorData["hospital"] = [request.user.administrator.hospital.pk]
             serializerDoctor = DoctorSerializer(data=doctorData)
             serializerDoctor.is_valid(raise_exception=True) 
 
@@ -236,3 +236,21 @@ class administratorView(APIView):
         administrator = request.user.administrator
         serializer = AdministratorSerializer(administrator)
         return Response(serializer.data)
+    
+    @extend_schema(
+        summary="PUT your Administrator Profile",
+        description="Put your administrator profile",
+        responses=AdministratorSerializer,
+    )
+    def put(self, request):
+        administrator = request.user.administrator
+        djangoUser = request.user.administrator.djangoUser.pk
+        data = request.data.copy()
+        data["djangoUser"] = djangoUser
+        data["hospital"] = request.user.administrator.hospital.pk
+        serializer = AdministratorSerializer(administrator, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

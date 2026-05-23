@@ -2,10 +2,10 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
-from doctorApp.serializers import IncidentSerializer, ReportSerializer, VaccineSerializer, AppointmentSerializer
-from patientApp.serializers import MessageSerializer
-from doctorApp.models import Doctor, Report, Vaccine
-from patientApp.models import Incident, Appointment, Message
+from doctorApp.serializers import IncidentSerializer, ReportSerializer, AppointmentSerializer
+from patientApp.serializers import MessageSerializer, AppointmentSerializer
+from doctorApp.models import Doctor, Report
+from patientApp.models import Incident, Appointment, Message, Appointment
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
@@ -31,7 +31,11 @@ class myProfileView(APIView):
     )
     def put(self, request):
         patient = request.user.patient
-        serializer = PatientSerializer(patient, data=request.data)
+        data = request.data.copy()
+        data["djangoUser"] = patient.djangoUser.pk
+        data["hospital"] = patient.hospital.pk
+        data["doctors"] = list(patient.doctors.values_list("pk", flat=True))
+        serializer = PatientSerializer(patient, data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -105,32 +109,6 @@ class messagesView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class vaccinesView(APIView):
-
-    @extend_schema(
-        summary="GET your Vaccines from your Patient",
-        description="Get your vaccines from your patient profile",
-        responses=VaccineSerializer
-    )
-    def get(self, request):
-        patient = request.user.patient
-        vaccines = Vaccine.objects.filter(patient=patient)
-        serializer = VaccineSerializer(vaccines, many=True)
-        return Response(serializer.data)
-
-    @extend_schema(
-        summary="POST a new Message",
-        description="Post a new message in the database",
-        request=VaccineSerializer,
-        responses={201: VaccineSerializer, 400: dict},
-    )
-    def post(self, request):
-        serializer = VaccineSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class appointmentsView(APIView):
 
@@ -158,3 +136,4 @@ class appointmentsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
