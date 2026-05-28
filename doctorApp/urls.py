@@ -10,5 +10,6 @@ urlpatterns = [
     path("myAppointments/<int:pk>", views.appointmentsPKView.as_view()),
     path("myIncidents/", views.incidentsView.as_view()),
     path("myIncidents/<int:pk>", views.incidentsViewPK.as_view()),
-    
+    path("myReports/", views.reportsView.as_view()),
+    path("myReports/<int:pk>", views.reportsPKView.as_view()),
 ]

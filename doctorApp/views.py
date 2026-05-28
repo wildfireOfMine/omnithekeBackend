@@ -189,12 +189,18 @@ class reportsView(APIView):
         responses={201: ReportSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = ReportSerializer(data=request.data)
+        data = request.data.copy()
+        data["doctor"] = request.user.doctor.pk
+        data["hospital"] = Patient.objects.get(pk=data["patient"]).hospital.pk
+        serializer = ReportSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def createNewIncident():
+        pass
 
 class reportsPKView(APIView):
     @extend_schema(

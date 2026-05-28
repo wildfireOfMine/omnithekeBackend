@@ -1,4 +1,5 @@
 from django.db import models
+from adminApp.models import Person
 from django.contrib.auth.models import User
 
 # Create your models here.
@@ -23,3 +24,10 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
+class Receptionist(Person):
+    hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="receptionists")
+    receptionistCode = models.CharField(max_length=20, unique=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "%s, %s" % (self.firstSurname, self.name)

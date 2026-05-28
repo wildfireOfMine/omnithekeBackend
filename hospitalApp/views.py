@@ -19,9 +19,8 @@ class hospitalView(APIView):
         responses=HospitalSerializer,
     )
     def get(self, request):
-        administrator = request.self.administrator
-        hospital = Hospital.objects.get(administrator=administrator)
-        serializer = HospitalSerializer(hospital, many=True)
+        hospital = request.user.administrator.hospital
+        serializer = HospitalSerializer(hospital)
         return Response(serializer.data)
 
     @extend_schema(
@@ -39,6 +38,17 @@ class hospitalView(APIView):
             administrator.hospital = hospital
             administrator.save()
 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def put(self, request):
+        hospital = request.user.administrator.hospital
+        data = request.data.copy()
+        data["id"] = hospital.pk
+        serializer = HospitalSerializer(hospital, data=data)
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
