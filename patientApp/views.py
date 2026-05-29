@@ -130,7 +130,11 @@ class appointmentsView(APIView):
         responses={201: AppointmentSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = AppointmentSerializer(data=request.data)
+        print(request.data)
+        data = request.data.copy()
+        data["patient"] = request.user.patient.pk
+        data["doctor"] = 1
+        serializer = AppointmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
