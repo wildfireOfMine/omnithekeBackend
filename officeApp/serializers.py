@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from hospitalApp.models import Hospital, Department
+from officeApp.models import Office, Department
 
-class HospitalSerializer(serializers.ModelSerializer):
+class OfficeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Hospital
+        model = Office
         fields = "__all__"
 
 class DepartmentSerializer(serializers.ModelSerializer):

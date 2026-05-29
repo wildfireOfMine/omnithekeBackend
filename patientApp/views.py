@@ -33,7 +33,7 @@ class myProfileView(APIView):
         patient = request.user.patient
         data = request.data.copy()
         data["djangoUser"] = patient.djangoUser.pk
-        data["hospital"] = patient.hospital.pk
+        data["office"] = patient.office.pk
         data["doctors"] = list(patient.doctors.values_list("pk", flat=True))
         serializer = PatientSerializer(patient, data=data)
         if serializer.is_valid():

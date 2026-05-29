@@ -29,7 +29,7 @@ class Person(models.Model):
     
 class Administrator(Person):
 
-    hospital = models.OneToOneField("hospitalApp.Hospital", on_delete=models.CASCADE, null=True, blank=True)
+    office = models.OneToOneField("officeApp.Office", on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)

@@ -36,7 +36,7 @@ class doctorProfileView(APIView):
         djangoUser = request.user.doctor.djangoUser.pk
         data = request.data.copy()
         data["djangoUser"] = djangoUser
-        data["hospital"] = list(doctor.hospital.values_list("pk", flat=True))
+        data["office"] = list(doctor.office.values_list("pk", flat=True))
         print(data)
         print(data["sex"])
         serializer = DoctorSerializer(doctor, data=data)
@@ -191,7 +191,7 @@ class reportsView(APIView):
     def post(self, request):
         data = request.data.copy()
         data["doctor"] = request.user.doctor.pk
-        data["hospital"] = Patient.objects.get(pk=data["patient"]).hospital.pk
+        data["office"] = Patient.objects.get(pk=data["patient"]).office.pk
         serializer = ReportSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

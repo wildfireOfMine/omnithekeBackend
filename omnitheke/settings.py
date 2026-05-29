@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'adminApp',
     'doctorApp',
-    'hospitalApp',
+    'officeApp',
     'patientApp',
     'authApp',
     'rest_framework',

@@ -1,7 +1,7 @@
 from django.contrib import admin
-from hospitalApp.models import Hospital, Receptionist, Department
+from officeApp.models import Office, Receptionist, Department
 
 # Register your models here.
-admin.site.register(Hospital)
+admin.site.register(Office)
 admin.site.register(Receptionist)
 admin.site.register(Department)

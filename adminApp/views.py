@@ -7,7 +7,7 @@ from authApp.serializers import RegisterSerializer
 from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from patientApp.models import Patient
-from hospitalApp.models import Hospital
+from officeApp.models import Office
 from adminApp.serializers import AdministratorSerializer, DoctorSerializer, PatientSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
@@ -25,8 +25,8 @@ class doctorView(APIView):
         responses=DoctorSerializer(many=True),
     )
     def get(self, request, pk=None):
-        hospital = request.user.administrator.hospital
-        doctors = Doctor.objects.filter(hospital=hospital)
+        office = request.user.administrator.office
+        doctors = Doctor.objects.filter(office=office)
         serializer = DoctorSerializer(doctors, many=True)
         return Response(serializer.data)
 
@@ -53,7 +53,7 @@ class doctorView(APIView):
             doctorData = request.data.copy()
             print(doctorData)
             doctorData["djangoUser"] = user.pk
-            doctorData["hospital"] = [request.user.administrator.hospital.pk]
+            doctorData["office"] = [request.user.administrator.office.pk]
             serializerDoctor = DoctorSerializer(data=doctorData)
             serializerDoctor.is_valid(raise_exception=True) 
 
@@ -132,8 +132,8 @@ class patientView(APIView):
         responses=PatientSerializer(many=True),
     )
     def get(self, request, pk=None):
-        hospital = request.user.administrator.hospital
-        patients = Patient.objects.filter(hospital=hospital)
+        office = request.user.administrator.office
+        patients = Patient.objects.filter(office=office)
         serializer = PatientSerializer(patients, many=True)
         return Response(serializer.data)
 
@@ -159,7 +159,7 @@ class patientView(APIView):
             patientData = request.data.copy()
             print(patientData)
             patientData["djangoUser"] = user.pk
-            patientData["hospital"] = request.user.administrator.hospital.pk
+            patientData["office"] = request.user.administrator.office.pk
             patientData["doctors"] = []
             serializerPatient = PatientSerializer(data=patientData)
             serializerPatient.is_valid(raise_exception=True) 
@@ -247,7 +247,7 @@ class administratorView(APIView):
         djangoUser = request.user.administrator.djangoUser.pk
         data = request.data.copy()
         data["djangoUser"] = djangoUser
-        data["hospital"] = request.user.administrator.hospital.pk
+        data["office"] = request.user.administrator.office.pk
         serializer = AdministratorSerializer(administrator, data=data)
         if serializer.is_valid():
             serializer.save()
