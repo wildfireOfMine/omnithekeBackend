@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Doctor(Person):
     educationalBackground = models.TextField(max_length=500)
-    cv = models.FileField(null=True, blank=True)
+    cv = models.FileField(upload_to="cv/", null=True, blank=True)
     office = models.ManyToManyField("officeApp.Office", related_name="doctors")
 
     def __str__(self):

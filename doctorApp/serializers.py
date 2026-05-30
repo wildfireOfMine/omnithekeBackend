@@ -19,6 +19,9 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class ReportSerializer(serializers.ModelSerializer):
+    patientName = serializers.StringRelatedField(source="patient", read_only=True)
+    doctorName = serializers.StringRelatedField(source="doctor", read_only=True)
+    incidentName = serializers.StringRelatedField(source="incident.description", read_only=True)
     class Meta:
         model = Report
         fields = "__all__"
