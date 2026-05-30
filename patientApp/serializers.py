@@ -7,6 +7,9 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class AppointmentSerializer(serializers.ModelSerializer):
+    patientName = serializers.StringRelatedField(source="patient", read_only=True)
+    doctorName = serializers.StringRelatedField(source="doctor", read_only=True)
+
     class Meta:
         model = Appointment
-        fields = "__all__"
+        fields = ["id", "comments", "beginning", "ending", "patient", "doctor", "patientName", "doctorName"]

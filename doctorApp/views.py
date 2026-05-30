@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import DoctorSerializer, PatientSerializer
-from doctorApp.serializers import NewDoctorSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
+from doctorApp.serializers import NewDoctorSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
+from patientApp.serializers import AppointmentSerializer
 from doctorApp.models import Report
 from patientApp.models import Patient, Appointment, Incident, Message
 from rest_framework.response import Response
