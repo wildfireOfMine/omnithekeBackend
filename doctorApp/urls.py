@@ -12,4 +12,5 @@ urlpatterns = [
     path("myIncidents/<int:pk>", views.incidentsViewPK.as_view()),
     path("myReports/", views.reportsView.as_view()),
     path("myReports/<int:pk>", views.reportsPKView.as_view()),
+    path("incidents/<int:pk>", views.patientIncidentsView.as_view()),
 ]

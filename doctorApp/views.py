@@ -192,6 +192,7 @@ class reportsView(APIView):
         data = request.data.copy()
         data["doctor"] = request.user.doctor.pk
         data["office"] = Patient.objects.get(pk=data["patient"]).office.pk
+        print(data)
         serializer = ReportSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -352,4 +353,16 @@ class messagesViewPK(APIView):
     def get(self, request, pk):
         message = Message.objects.filter(pk=pk)
         serializer = MessageSerializer(message)
+        return Response(serializer.data)
+    
+class patientIncidentsView(APIView):
+    @extend_schema(
+        summary="GET all Incidents",
+        description="Get all Incidents from a patient from the database",
+        responses=IncidentSerializer
+    )
+    def get(self, request, pk):
+        patient = Patient.objects.get(pk=pk)
+        incidents = Incident.objects.filter(patient=patient)
+        serializer = IncidentSerializer(incidents, many=True)
         return Response(serializer.data)

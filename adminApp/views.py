@@ -7,8 +7,8 @@ from authApp.serializers import RegisterSerializer
 from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from patientApp.models import Patient
-from officeApp.models import Office
-from adminApp.serializers import AdministratorSerializer, DoctorSerializer, PatientSerializer
+from officeApp.models import Office, Receptionist
+from adminApp.serializers import AdministratorSerializer, DoctorSerializer, PatientSerializer, ReceptionistSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from django.db import transaction
@@ -41,7 +41,7 @@ class doctorView(APIView):
         with transaction.atomic():
 
             userData = {
-                "username": request.data.get("name"),
+                "username": request.data.get("email"),
                 "email": request.data.get("email"),
                 "password": "12345"
             }
@@ -147,7 +147,7 @@ class patientView(APIView):
         with transaction.atomic():
 
             userData = {
-                "username": request.data.get("name"),
+                "username": request.data.get("email"),
                 "email": request.data.get("email"),
                 "password": "12345"
             }
@@ -254,3 +254,53 @@ class administratorView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class receptionistView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET all Receptionists",
+        description="Get a list of all receptionists",
+        responses=ReceptionistSerializer(many=True),
+    )
+    def get(self, request, pk=None):
+        office = request.user.administrator.office
+        receptionists = Receptionist.objects.filter(office=office)
+        serializer = DoctorSerializer(receptionists, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="POST a new Receptionst",
+        description="Post a new receptionist in the database",
+        request=ReceptionistSerializer,
+        responses={201: ReceptionistSerializer, 400: dict},
+    )
+    def post(self, request):
+
+        with transaction.atomic():
+
+            userData = {
+                "username": request.data.get("email"),
+                "email": request.data.get("email"),
+                "password": "12345"
+            }
+            serializerUser = RegisterSerializer(data=userData)
+            serializerUser.is_valid(raise_exception=True)
+            user = serializerUser.save()
+            print(user)
+
+            receptionistData = request.data.copy()
+            print(receptionistData)
+            receptionistData["djangoUser"] = user.pk
+            receptionistData["office"] = request.user.administrator.office.pk
+            serializerReceptionist = ReceptionistSerializer(data=receptionistData)
+            serializerReceptionist.is_valid(raise_exception=True) 
+
+            
+            if serializerReceptionist.is_valid():
+                serializerReceptionist.save()
+                return Response(serializerReceptionist.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializerReceptionist.errors, status=status.HTTP_400_BAD_REQUEST)
+        
