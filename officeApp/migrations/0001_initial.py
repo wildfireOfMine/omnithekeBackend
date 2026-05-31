@@ -10,21 +10,36 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('doctorApp', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Report',
+            name='Office',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('subject', models.CharField(max_length=100)),
-                ('content', models.TextField(max_length=3500)),
-                ('reportTimestamp', models.DateTimeField(auto_now_add=True)),
+                ('identityCode', models.CharField(max_length=20, unique=True)),
+                ('name', models.CharField(max_length=100)),
+                ('address', models.CharField(max_length=200)),
+                ('city', models.CharField(blank=True, max_length=100, null=True)),
+                ('country', models.CharField(blank=True, max_length=100, null=True)),
+                ('postCode', models.CharField(blank=True, max_length=15, null=True)),
+                ('telephone', models.CharField(blank=True, max_length=15, null=True)),
+                ('fax', models.CharField(blank=True, max_length=50, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Doctor',
+            name='Department',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100)),
+                ('doctors', models.ManyToManyField(related_name='departments', to='doctorApp.doctor')),
+                ('office', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='departments', to='officeApp.office')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Receptionist',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
@@ -39,9 +54,10 @@ class Migration(migrations.Migration):
                 ('postCode', models.CharField(max_length=15)),
                 ('country', models.CharField(max_length=100)),
                 ('telephone', models.CharField(max_length=15)),
-                ('educationalBackground', models.TextField(max_length=500)),
-                ('cv', models.FileField(blank=True, null=True, upload_to='')),
+                ('receptionistCode', models.CharField(max_length=20, unique=True)),
+                ('active', models.BooleanField(default=True)),
                 ('djangoUser', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('office', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='receptionists', to='officeApp.office')),
             ],
             options={
                 'abstract': False,

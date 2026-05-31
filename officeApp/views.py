@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
-from hospitalApp.models import Hospital, Department
+from officeApp.models import Office, Department
 from drf_spectacular.utils import extend_schema
-from hospitalApp.serializers import HospitalSerializer, DepartmentSerializer
+from officeApp.serializers import OfficeSerializer, DepartmentSerializer
 from adminApp.serializers import AdministratorSerializer
 from adminApp.models import Administrator
 from rest_framework import permissions, status
@@ -11,59 +11,70 @@ from rest_framework.response import Response
 
 # Create your views here.
 
-class hospitalView(APIView):
+class officeView(APIView):
 
     @extend_schema(
-        summary="GET your Hospital",
-        description="Get your hospital from your administrator profile",
-        responses=HospitalSerializer,
+        summary="GET your Office",
+        description="Get your office from your administrator profile",
+        responses=OfficeSerializer,
     )
     def get(self, request):
-        administrator = request.self.administrator
-        hospital = Hospital.objects.get(administrator=administrator)
-        serializer = HospitalSerializer(hospital, many=True)
+        office = request.user.administrator.office
+        serializer = OfficeSerializer(office)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="POST a new Hospital",
-        description="Post a new hospital in the database",
-        request=HospitalSerializer,
-        responses={201: HospitalSerializer, 400: dict},
+        summary="POST a new Office",
+        description="Post a new office in the database",
+        request=OfficeSerializer,
+        responses={201: OfficeSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = HospitalSerializer(data=request.data)
+        serializer = OfficeSerializer(data=request.data)
         if serializer.is_valid():
-            hospital = serializer.save()
+            office = serializer.save()
 
             administrator = request.user.administrator
-            administrator.hospital = hospital
+            administrator.office = office
             administrator.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def put(self, request):
+        office = request.user.administrator.office
+        data = request.data.copy()
+        data["id"] = office.pk
+        serializer = OfficeSerializer(office, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class hospitalPKView(APIView):
+class officePKView(APIView):
 
     @extend_schema(
-        summary="GET a Hospital",
-        description="Get a hospital from the database",
-        responses=HospitalSerializer,
+        summary="GET an Office",
+        description="Get a office from the database",
+        responses=OfficeSerializer,
     )
     def get(self, request, pk):
-        hospital = Hospital.objects.get(pk=pk)
-        serializer = HospitalSerializer(hospital)
+        office = Office.objects.get(pk=pk)
+        serializer = OfficeSerializer(office)
         return Response(serializer.data)
 
     @extend_schema(
-        summary="PUT a Hospital",
-        description="Put a hospital from your administrator profile",
-        request=HospitalSerializer,
-        responses=HospitalSerializer,
+        summary="PUT an Office",
+        description="Put a office from your administrator profile",
+        request=OfficeSerializer,
+        responses=OfficeSerializer,
     )
     def put(self, request, pk):
-        hospital = Hospital.objects.get(pk=pk)
-        serializer = HospitalSerializer(hospital, data=request.data)
+        office = Office.objects.get(pk=pk)
+        serializer = OfficeSerializer(office, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -71,14 +82,14 @@ class hospitalPKView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        summary="PATCH a Hospital",
-        description="Patch a hospital from your administrator profile",
-        request=HospitalSerializer,
-        responses={201: HospitalSerializer, 400: dict},
+        summary="PATCH an Office",
+        description="Patch an office from your administrator profile",
+        request=OfficeSerializer,
+        responses={201: OfficeSerializer, 400: dict},
     )
     def patch(self, request, pk):
-        hospital = Hospital.objects.get(pk=pk)
-        serializer = HospitalSerializer(hospital, data=request.data, partial=True)
+        office = Office.objects.get(pk=pk)
+        serializer = OfficeSerializer(office, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -87,14 +98,14 @@ class hospitalPKView(APIView):
 
 
     @extend_schema(
-        summary="DELETE a Hospital",
-        description="Delete a hospital from your administrator profile",
-        request=HospitalSerializer,
-        responses=HospitalSerializer,
+        summary="DELETE an Office",
+        description="Delete an office from your administrator profile",
+        request=OfficeSerializer,
+        responses=OfficeSerializer,
     )
     def delete(self, request, pk):
-        hospital = get_object_or_404(Hospital, pk=pk)
-        hospital.delete()
+        office = get_object_or_404(Office, pk=pk)
+        office.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class departmentView(APIView):
@@ -106,8 +117,8 @@ class departmentView(APIView):
     )
     def get(self, request):
         administrator = request.self.administrator
-        hospital = Hospital.objects.get(administrator=administrator)
-        print(hospital.objects.departments)
+        office = Office.objects.get(administrator=administrator)
+        print(office.objects.departments)
 
     @extend_schema(
         summary="POST a new Department",
@@ -210,7 +221,7 @@ class administratorPKView(APIView):
 
     @extend_schema(
         summary="PUT an Administrator",
-        description="Put a hospital from your administrator profile",
+        description="Put an administrator from the database",
         request=AdministratorSerializer,
         responses=AdministratorSerializer,
     )
@@ -225,7 +236,7 @@ class administratorPKView(APIView):
 
     @extend_schema(
         summary="PATCH an Administrator",
-        description="Patch an administsrator from your administrator profile",
+        description="Patch an administrator from your administrator profile",
         request=AdministratorSerializer,
         responses={201: AdministratorSerializer, 400: dict},
     )

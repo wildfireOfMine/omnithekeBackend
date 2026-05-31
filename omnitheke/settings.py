@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'adminApp',
     'doctorApp',
-    'hospitalApp',
+    'officeApp',
     'patientApp',
     'authApp',
     'rest_framework',
@@ -149,7 +149,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Madrid'
 
 USE_I18N = True
 

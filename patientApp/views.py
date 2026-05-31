@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
-from doctorApp.serializers import IncidentSerializer, ReportSerializer, AppointmentSerializer
+from doctorApp.serializers import IncidentSerializer, ReportSerializer
 from patientApp.serializers import MessageSerializer, AppointmentSerializer
 from doctorApp.models import Doctor, Report
 from patientApp.models import Incident, Appointment, Message, Appointment
@@ -33,7 +33,7 @@ class myProfileView(APIView):
         patient = request.user.patient
         data = request.data.copy()
         data["djangoUser"] = patient.djangoUser.pk
-        data["hospital"] = patient.hospital.pk
+        data["office"] = patient.office.pk
         data["doctors"] = list(patient.doctors.values_list("pk", flat=True))
         serializer = PatientSerializer(patient, data=data)
         if serializer.is_valid():
@@ -130,7 +130,11 @@ class appointmentsView(APIView):
         responses={201: AppointmentSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = AppointmentSerializer(data=request.data)
+        print(request.data)
+        data = request.data.copy()
+        data["patient"] = request.user.patient.pk
+        data["doctor"] = 1
+        serializer = AppointmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

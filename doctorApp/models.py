@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Doctor(Person):
     educationalBackground = models.TextField(max_length=500)
-    cv = models.FileField(null=True, blank=True)
-    hospital = models.ManyToManyField("hospitalApp.Hospital", related_name="doctors")
+    cv = models.FileField(upload_to="cv/", null=True, blank=True)
+    office = models.ManyToManyField("officeApp.Office", related_name="doctors")
 
     def __str__(self):
         return "%s, %s" % (self.firstSurname, self.name)
@@ -18,7 +18,7 @@ class Report(models.Model):
     subject = models.CharField(max_length=100)
     content = models.TextField(max_length=3500)
     appointment = models.ForeignKey("patientApp.Appointment", on_delete=models.CASCADE, related_name="reports", null=True, blank=True)
-    hospital = models.ForeignKey("hospitalApp.Hospital", on_delete=models.CASCADE, related_name="reports")
+    office = models.ForeignKey("officeApp.Office", on_delete=models.CASCADE, related_name="reports")
     incident = models.ForeignKey("patientApp.Incident", on_delete=models.CASCADE, related_name="reports", null=True, blank=True)
     reportTimestamp = models.DateTimeField(auto_now_add=True)
 

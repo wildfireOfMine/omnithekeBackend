@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import DoctorSerializer, PatientSerializer
-from doctorApp.serializers import NewDoctorSerializer, AppointmentSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
+from doctorApp.serializers import NewDoctorSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
+from patientApp.serializers import AppointmentSerializer
 from doctorApp.models import Report
 from patientApp.models import Patient, Appointment, Incident, Message
 from rest_framework.response import Response
@@ -36,7 +37,7 @@ class doctorProfileView(APIView):
         djangoUser = request.user.doctor.djangoUser.pk
         data = request.data.copy()
         data["djangoUser"] = djangoUser
-        data["hospital"] = list(doctor.hospital.values_list("pk", flat=True))
+        data["office"] = list(doctor.office.values_list("pk", flat=True))
         print(data)
         print(data["sex"])
         serializer = DoctorSerializer(doctor, data=data)
@@ -189,12 +190,19 @@ class reportsView(APIView):
         responses={201: ReportSerializer, 400: dict},
     )
     def post(self, request):
-        serializer = ReportSerializer(data=request.data)
+        data = request.data.copy()
+        data["doctor"] = request.user.doctor.pk
+        data["office"] = Patient.objects.get(pk=data["patient"]).office.pk
+        print(data)
+        serializer = ReportSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def createNewIncident():
+        pass
 
 class reportsPKView(APIView):
     @extend_schema(
@@ -275,12 +283,12 @@ class incidentsView(APIView):
 
 class incidentsViewPK(APIView):
     @extend_schema(
-        summary="GET an Incident",
+        summary="GET an Active Incident",
         description="Get an incident with your doctor from the database",
         responses=AppointmentSerializer
     )
     def get(self, request, pk):
-        incident = Incident.objects.filter(pk=pk)
+        incident = Incident.objects.filter(pk=pk, active=True)
         serializer = IncidentSerializer(incident)
         return Response(serializer.data)
     
@@ -347,3 +355,71 @@ class messagesViewPK(APIView):
         message = Message.objects.filter(pk=pk)
         serializer = MessageSerializer(message)
         return Response(serializer.data)
+    
+class patientIncidentsView(APIView):
+    @extend_schema(
+        summary="GET all Incidents",
+        description="Get all Incidents from a patient from the database",
+        responses=IncidentSerializer
+    )
+    def get(self, request, pk):
+        patient = Patient.objects.get(pk=pk)
+        incidents = Incident.objects.filter(patient=patient, active=True)
+        serializer = IncidentSerializer(incidents, many=True)
+        return Response(serializer.data)
+    
+class patientViewPK(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET a Patient",
+        description="Get a Patient from a PK",
+        responses=PatientSerializer(many=False),
+    )
+    def get(self, request, pk):
+        patient = Patient.objects.get(pk=pk)
+        serializer = PatientSerializer(patient)
+        return Response(serializer.data)
+
+
+    @extend_schema(
+        summary="PUT a Patient",
+        description="Put a Patient from a PK",
+        request=PatientSerializer,
+        responses={201: PatientSerializer, 400: dict},
+    )
+    def put(self, request, pk):
+        patient = Patient.objects.get(pk=pk)
+        serializer = PatientSerializer(patient, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="PATCH a Patient",
+        description="Patch a Patient from a PK",
+        request=PatientSerializer,
+        responses={201: PatientSerializer, 400: dict},
+    )
+    def patch(self, request, pk):
+        patient = Patient.objects.get(pk=pk)
+        serializer = PatientSerializer(patient, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="DELETE a Patient",
+        description="Delete a Patient from a PK",
+        responses={204: None},
+    )
+    def delete(self, request, pk):
+        patient = get_object_or_404(Patient, pk=pk)
+        patient.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    

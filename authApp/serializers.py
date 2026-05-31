@@ -36,6 +36,8 @@ class TokenSerializer(TokenObtainPairSerializer):
             role = 'patient'
         elif hasattr(user, 'administrator'):
             role = 'admin'
+        elif hasattr(user, 'receptionist'):
+            role = 'receptionist'
         data['role'] = role
 
         return data
