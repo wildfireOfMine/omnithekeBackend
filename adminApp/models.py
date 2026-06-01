@@ -14,7 +14,7 @@ class Person(models.Model):
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, null=True, blank=True)
     email = models.EmailField(null=False, blank=False)
     birthdate = models.DateField()
-    identityDocument = models.CharField(max_length=20, unique=True)
+    identityDocument = models.CharField(max_length=20, unique=True, null=True, blank=True)
     address = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     postCode = models.CharField(max_length=15)
