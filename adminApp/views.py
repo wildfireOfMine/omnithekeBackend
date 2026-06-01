@@ -53,7 +53,10 @@ class doctorView(APIView):
             doctorData = request.data.copy()
             print(doctorData)
             doctorData["djangoUser"] = user.pk
-            doctorData["office"] = [request.user.administrator.office.pk]
+            if hasattr(request.user, "administrator"):
+                doctorData["office"] = [request.user.administrator.office.pk]
+            elif hasattr(request.user, "receptionist"):
+                doctorData["office"] = [request.user.receptionist.office.pk]
             serializerDoctor = DoctorSerializer(data=doctorData)
             serializerDoctor.is_valid(raise_exception=True) 
 
@@ -159,7 +162,10 @@ class patientView(APIView):
             patientData = request.data.copy()
             print(patientData)
             patientData["djangoUser"] = user.pk
-            patientData["office"] = request.user.administrator.office.pk
+            if hasattr(request.user, "administrator"):
+                patientData["office"] = request.user.administrator.office.pk
+            elif hasattr(request.user, "receptionist"):
+                patientData["office"] = request.user.receptionist.office.pk
             patientData["doctors"] = []
             serializerPatient = PatientSerializer(data=patientData)
             serializerPatient.is_valid(raise_exception=True) 

@@ -3,11 +3,17 @@ from rest_framework.views import APIView
 from officeApp.models import Office, Department
 from drf_spectacular.utils import extend_schema
 from officeApp.serializers import OfficeSerializer, DepartmentSerializer
-from adminApp.serializers import AdministratorSerializer
+from adminApp.serializers import AdministratorSerializer, ReceptionistSerializer, DoctorSerializer, PatientSerializer
 from adminApp.models import Administrator
+from doctorApp.models import Doctor
+from officeApp.models import Receptionist
+from patientApp.models import Patient
 from rest_framework import permissions, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
 
 # Create your views here.
 
@@ -260,3 +266,62 @@ class administratorPKView(APIView):
         administrator = get_object_or_404(Administrator, pk=pk)
         administrator.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class myReceptionistView(APIView):
+    @extend_schema(
+        summary="GET your Receptinist Profile",
+        description="Get your receptionist profile",
+        responses=ReceptionistSerializer,
+    )
+    def get(self, request):
+        receptionist = request.user.receptionist
+        serializer = ReceptionistSerializer(receptionist)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="PUT your Receptionist Profile",
+        description="Put your receptionist profile",
+        responses=ReceptionistSerializer,
+    )
+    def put(self, request):
+        receptionist = request.user.receptionist
+        djangoUser = request.user.receptionist.djangoUser.pk
+        data = request.data.copy()
+        data["djangoUser"] = djangoUser
+        data["office"] = request.user.receptionist.office.pk
+        serializer = ReceptionistSerializer(receptionist, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class doctorView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET all Doctors",
+        description="Get a list of all doctors",
+        responses=DoctorSerializer(many=True),
+    )
+    def get(self, request, pk=None):
+        office = request.user.receptionist.office
+        doctors = Doctor.objects.filter(office=office)
+        serializer = DoctorSerializer(doctors, many=True)
+        return Response(serializer.data)
+
+class patientView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET all Patients",
+        description="Get a list of all patients",
+        responses=PatientSerializer(many=True),
+    )
+    def get(self, request, pk=None):
+        office = request.user.receptionist.office
+        patients = Patient.objects.filter(office=office)
+        serializer = PatientSerializer(patients, many=True)
+        return Response(serializer.data)
