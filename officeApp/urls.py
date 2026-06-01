@@ -9,4 +9,10 @@ urlpatterns = [
     path("department/<int:pk>/", views.departmentPKView.as_view()),
     path("administrator/", views.administratorView.as_view()),
     path("administrator/<int:pk>/", views.administratorPKView.as_view()),
+    path("myProfile/", views.myReceptionistView.as_view()),
+    path("doctor/", views.doctorView.as_view()),
+    path("patient/", views.patientView.as_view()),
+    path("confirmedAppointments/", views.confirmedAppointmentsView.as_view()),
+    path("inactiveAppointments/", views.inactiveAppointmentsView.as_view()),
+    path("appointment/<int:pk>/", views.appointmentView.as_view())
 ]

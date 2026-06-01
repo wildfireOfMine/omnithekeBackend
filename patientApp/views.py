@@ -64,9 +64,12 @@ class myIncidentsView(APIView):
     )
     def get(self, request):
         patient = request.user.patient
-        incidents = Incident.objects.filter(patient=patient)
-        serializer = IncidentSerializer(incidents, many=True)
-        return Response(serializer.data)
+        active = Incident.objects.filter(patient=patient, active=True)
+        old = Incident.objects.filter(patient=patient, active=False)
+        return Response({
+            "activeIncidents": IncidentSerializer(active, many=True).data,
+            "oldIncidents": IncidentSerializer(old, many=True).data
+        })
 
 
 class myReportsView(APIView):
@@ -119,7 +122,7 @@ class appointmentsView(APIView):
     )
     def get(self, request):
         patient = request.user.patient
-        appointments = Appointment.objects.filter(patient=patient)
+        appointments = Appointment.objects.filter(patient=patient).order_by("-beginning")
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
