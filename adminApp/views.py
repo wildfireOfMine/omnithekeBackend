@@ -267,7 +267,7 @@ class receptionistView(APIView):
     def get(self, request, pk=None):
         office = request.user.administrator.office
         receptionists = Receptionist.objects.filter(office=office)
-        serializer = DoctorSerializer(receptionists, many=True)
+        serializer = ReceptionistSerializer(receptionists, many=True)
         return Response(serializer.data)
 
     @extend_schema(
