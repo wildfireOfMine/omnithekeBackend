@@ -16,10 +16,12 @@ class Patient(Person):
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments")
     doctor = models.ForeignKey("doctorApp.Doctor", on_delete=models.CASCADE, related_name="appointments", null=True, blank=True)
+    office = models.ForeignKey("officeApp.Office", on_delete=models.CASCADE, related_name="appointments")
     comments = models.CharField(max_length=100)
     timestamp = models.DateTimeField(auto_now_add=True, null=True)
     beginning = models.DateTimeField(null=True)
     ending = models.DateTimeField(null=True)
+    confirmed = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s & %s-%s" % (self.timestamp, self.beginning, self.ending)

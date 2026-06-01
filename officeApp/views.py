@@ -7,7 +7,8 @@ from adminApp.serializers import AdministratorSerializer, ReceptionistSerializer
 from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from officeApp.models import Receptionist
-from patientApp.models import Patient
+from patientApp.models import Patient, Appointment
+from patientApp.serializers import AppointmentSerializer
 from rest_framework import permissions, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -325,3 +326,38 @@ class patientView(APIView):
         patients = Patient.objects.filter(office=office)
         serializer = PatientSerializer(patients, many=True)
         return Response(serializer.data)
+
+class inactiveAppointmentsView(APIView):
+    @extend_schema(
+        summary="GET all Inactive Appointments",
+        description="Get a list of all inactive appointments",
+        responses=PatientSerializer(many=True),
+    )
+    def get(self, request):
+        office = request.user.receptionist.office
+        appointments = Appointment.objects.filter(office=office, confirmed=False)
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
+
+class confirmedAppointmentsView(APIView):
+
+    @extend_schema(
+        summary="GET all Confirmed Appointments",
+        description="Get a list of all confirmed appointments",
+        responses=PatientSerializer(many=True),
+    )
+    def get(self, request):
+        office = request.user.receptionist.office
+        appointments = Appointment.objects.filter(office=office, confirmed=True)
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
+    
+class appointmentView(APIView):
+    def patch(self, request, pk):
+        appointment = Appointment.objects.get(pk=pk)
+        serializer = AppointmentSerializer(appointment, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
