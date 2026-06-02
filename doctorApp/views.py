@@ -75,24 +75,6 @@ class myPatientsView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class addNewDoctorView(APIView):
-
-    @extend_schema(
-        summary="PATCH a Patient's Doctors",
-        description="Patch a patient's doctors, whether adding or erasing",
-        request=NewDoctorSerializer,
-        responses={201: NewDoctorSerializer, 400: dict},
-    )
-    def patch(self, request, pk):
-        patient = get_object_or_404(Patient, pk=pk)
-        serializer = PatientSerializer(patient, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     
 class appointmentsView(APIView):
 

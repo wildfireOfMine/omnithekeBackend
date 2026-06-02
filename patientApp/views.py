@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
@@ -137,6 +137,7 @@ class appointmentsView(APIView):
         data = request.data.copy()
         data["patient"] = request.user.patient.pk
         data["doctor"] = 1
+        data["office"] = request.user.patient.office.pk 
         serializer = AppointmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -144,3 +145,8 @@ class appointmentsView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+class appointmentsPKView(APIView):
+    def delete(self, request, pk):
+        appointment = get_object_or_404(Appointment, pk=pk)
+        appointment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -14,6 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
+from doctorApp.serializers import NewDoctorSerializer
 from django.db import transaction
 
 # Create your views here.
@@ -361,3 +362,23 @@ class appointmentView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class addNewDoctorView(APIView):
+
+    @extend_schema(
+        summary="PATCH a Patient's Doctors",
+        description="Patch a patient's doctors, whether adding or erasing",
+        request=NewDoctorSerializer,
+        responses={201: NewDoctorSerializer, 400: dict},
+    )
+    def patch(self, request, pk):
+        print(request.data)
+        patient = get_object_or_404(Patient, pk=pk)
+        print(patient)
+        doctorId = request.data.get("doctor")
+        print(doctorId)
+        doctor = get_object_or_404(Doctor, pk=doctorId)
+        if doctor not in patient.doctors.all():
+            patient.doctors.add(doctor)
+        serializer = PatientSerializer(patient)
+        return Response(serializer.data, status=status.HTTP_200_OK)
