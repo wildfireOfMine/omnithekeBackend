@@ -1,6 +1,7 @@
 from django.db import models
 from adminApp.models import Person
 from django.contrib.auth.models import User
+from datetime import time
 
 # Create your models here.
 class Office(models.Model):
@@ -12,6 +13,8 @@ class Office(models.Model):
     postCode = models.CharField(max_length=15, null=True, blank=True)
     telephone = models.CharField(max_length=15, null=True, blank=True)
     fax = models.CharField(max_length=50, null=True, blank=True)
+    openingHour = models.TimeField(default=time(8, 0))
+    closingHour = models.TimeField(default=time(20, 0))
 
     def __str__(self):
         return self.name

@@ -14,5 +14,6 @@ urlpatterns = [
     path("patient/", views.patientView.as_view()),
     path("confirmedAppointments/", views.confirmedAppointmentsView.as_view()),
     path("inactiveAppointments/", views.inactiveAppointmentsView.as_view()),
-    path("appointment/<int:pk>/", views.appointmentView.as_view())
+    path("appointment/<int:pk>/", views.appointmentView.as_view()),
+    path("addNewDoctors/<int:pk>/", views.addNewDoctorView.as_view()),
 ]

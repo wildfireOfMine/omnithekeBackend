@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
@@ -7,6 +7,8 @@ from patientApp.serializers import MessageSerializer, AppointmentSerializer
 from doctorApp.models import Doctor, Report
 from patientApp.models import Incident, Appointment, Message, Appointment
 from rest_framework.response import Response
+from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework import permissions, status
 
 # Create your views here.
@@ -122,7 +124,7 @@ class appointmentsView(APIView):
     )
     def get(self, request):
         patient = request.user.patient
-        appointments = Appointment.objects.filter(patient=patient).order_by("-beginning")
+        appointments = Appointment.objects.filter(patient=patient).order_by("-timestamp")
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
@@ -136,7 +138,7 @@ class appointmentsView(APIView):
         print(request.data)
         data = request.data.copy()
         data["patient"] = request.user.patient.pk
-        data["doctor"] = 1
+        data["office"] = request.user.patient.office.pk 
         serializer = AppointmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -144,3 +146,33 @@ class appointmentsView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+class appointmentsPKView(APIView):
+    def delete(self, request, pk):
+        appointment = get_object_or_404(Appointment, pk=pk)
+        appointment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class availabilityView(APIView):
+
+    def get(self, request, date, pk):
+        
+        chosenDate = datetime.strptime(date, "%Y-%m-%d").date()
+        appointments = Appointment.objects.filter(doctor_id=pk, beginning__date=chosenDate)
+        office = request.user.patient.office
+
+        openingHour = office.openingHour.hour
+        closingHour = office.closingHour.hour
+
+        occupiedHours = []
+        for appointment in appointments:
+            localTime = timezone.localtime(appointment.beginning)
+            occupiedHours.append(localTime.hour)
+        
+        availableHours = []
+        for hour in range(openingHour, closingHour):
+            if hour in occupiedHours:
+                print("INSIDE APPOINTMENTS")
+            else:
+                availableHours.append(f"{hour:02d}:00")
+        
+        return Response(availableHours)
