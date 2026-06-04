@@ -20,6 +20,7 @@ class Person(models.Model):
     postCode = models.CharField(max_length=15)
     country = models.CharField(max_length=100)
     telephone = models.CharField(max_length=15)
+    mustChangePassword = models.BooleanField(default=False)
 
     class Meta:
         abstract = True

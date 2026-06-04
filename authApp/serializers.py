@@ -32,12 +32,16 @@ class TokenSerializer(TokenObtainPairSerializer):
 
         if hasattr(user, 'doctor'):
             role = 'doctor'
+            mustChange = user.doctor.mustChangePassword
         elif hasattr(user, 'patient'):
             role = 'patient'
+            mustChange = user.patient.mustChangePassword
         elif hasattr(user, 'administrator'):
             role = 'admin'
         elif hasattr(user, 'receptionist'):
             role = 'receptionist'
+            mustChange = user.receptionist.mustChangePassword
         data['role'] = role
-
+        data['mustChangePassword'] = mustChange
+        
         return data
