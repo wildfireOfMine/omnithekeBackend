@@ -18,7 +18,7 @@ from django.db import transaction
 
 class doctorView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdmin, IsReceptionist]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="GET all Doctors",
@@ -129,7 +129,7 @@ class doctorViewPK(APIView):
 
 class patientView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdmin, IsReceptionist]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="GET all Patients",
