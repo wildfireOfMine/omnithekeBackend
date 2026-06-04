@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.permissions import IsAuthenticated
 from authApp.serializers import RegisterSerializer
-from permissions import IsAdmin, IsReceptionist
+from adminApp.permissions import IsAdmin, IsReceptionist
 from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from patientApp.models import Patient
