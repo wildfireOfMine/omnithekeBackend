@@ -33,4 +33,4 @@ class Receptionist(Person):
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return "%s, %s" % (self.firstSurname, self.name)
+        return "RECEPTIONIST: %s, %s" % (self.firstSurname, self.name)

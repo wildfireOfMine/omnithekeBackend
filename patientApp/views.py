@@ -3,6 +3,9 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import PatientSerializer, DoctorSerializer
 from doctorApp.serializers import IncidentSerializer, ReportSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from adminApp.permissions import IsPatient
 from patientApp.serializers import MessageSerializer, AppointmentSerializer
 from doctorApp.models import Doctor, Report
 from patientApp.models import Incident, Appointment, Message, Appointment
@@ -14,6 +17,8 @@ from rest_framework import permissions, status
 # Create your views here.
 
 class myProfileView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
 
     @extend_schema(
         summary="GET your Patient Profile",
@@ -45,6 +50,8 @@ class myProfileView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class myDoctorsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
     @extend_schema(
         summary="GET your Doctors from your Patient",
         description="Get your doctors from your patient profile",
@@ -58,6 +65,8 @@ class myDoctorsView(APIView):
         return Response(serializer.data)
 
 class myIncidentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
 
     @extend_schema(
         summary="GET your Incidents from your Patient",
@@ -75,6 +84,8 @@ class myIncidentsView(APIView):
 
 
 class myReportsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
 
     @extend_schema(
         summary="GET your Reports from your Patient",
@@ -88,6 +99,8 @@ class myReportsView(APIView):
         return Response(serializer.data)
 
 class messagesView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
 
     @extend_schema(
         summary="GET your Messages from your Patient",
@@ -116,6 +129,8 @@ class messagesView(APIView):
 
 
 class appointmentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
 
     @extend_schema(
         summary="GET your Appointments from your Patient",
@@ -147,13 +162,28 @@ class appointmentsView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class appointmentsPKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
+
+    @extend_schema(
+        summary="DELETE an Appointment",
+        description="Delete an appointment with your patient from the database",
+        request=AppointmentSerializer,
+        responses=AppointmentSerializer,
+    )
     def delete(self, request, pk):
         appointment = get_object_or_404(Appointment, pk=pk)
         appointment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class availabilityView(APIView):
-
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
+    
+    @extend_schema(
+        summary="GET all Available Appointments",
+        description="Get a list of available appointments in a date with a doctor",
+    )
     def get(self, request, date, pk):
         
         chosenDate = datetime.strptime(date, "%Y-%m-%d").date()

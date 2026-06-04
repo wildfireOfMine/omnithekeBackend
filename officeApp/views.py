@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema
 from officeApp.serializers import OfficeSerializer, DepartmentSerializer
 from adminApp.serializers import AdministratorSerializer, ReceptionistSerializer, DoctorSerializer, PatientSerializer
 from adminApp.models import Administrator
+from adminApp.permissions import IsReceptionist
 from doctorApp.models import Doctor
 from officeApp.models import Receptionist
 from patientApp.models import Patient, Appointment
@@ -20,6 +21,8 @@ from django.db import transaction
 # Create your views here.
 
 class officeView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="GET your Office",
@@ -63,6 +66,8 @@ class officeView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class officePKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="GET an Office",
@@ -117,6 +122,8 @@ class officePKView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class departmentView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="GET all Departments",
@@ -143,6 +150,9 @@ class departmentView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class departmentPKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     @extend_schema(
         summary="GET a Department",
         description="Get a department from the database",
@@ -197,6 +207,8 @@ class departmentPKView(APIView):
     
 
 class administratorView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="POST a new Department",
@@ -217,6 +229,9 @@ class administratorView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class administratorPKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     @extend_schema(
         summary="GET an Administrator",
         description="Get an administrator from the database",
@@ -270,6 +285,9 @@ class administratorPKView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class myReceptionistView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsReceptionist]
+
     @extend_schema(
         summary="GET your Receptinist Profile",
         description="Get your receptionist profile",
@@ -300,7 +318,7 @@ class myReceptionistView(APIView):
         
 class doctorView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsReceptionist]
 
     @extend_schema(
         summary="GET all Doctors",
@@ -315,7 +333,7 @@ class doctorView(APIView):
 
 class patientView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsReceptionist]
 
     @extend_schema(
         summary="GET all Patients",
@@ -329,6 +347,9 @@ class patientView(APIView):
         return Response(serializer.data)
 
 class inactiveAppointmentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsReceptionist]
+
     @extend_schema(
         summary="GET all Inactive Appointments",
         description="Get a list of all inactive appointments",
@@ -336,11 +357,13 @@ class inactiveAppointmentsView(APIView):
     )
     def get(self, request):
         office = request.user.receptionist.office
-        appointments = Appointment.objects.filter(office=office, confirmed=False)
+        appointments = Appointment.objects.filter(office=office, confirmed=False).order_by("-timestamp")
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
 class confirmedAppointmentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsReceptionist]
 
     @extend_schema(
         summary="GET all Confirmed Appointments",
@@ -349,11 +372,20 @@ class confirmedAppointmentsView(APIView):
     )
     def get(self, request):
         office = request.user.receptionist.office
-        appointments = Appointment.objects.filter(office=office, confirmed=True)
+        appointments = Appointment.objects.filter(office=office, confirmed=True).order_by("-timestamp")
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
     
 class appointmentView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsReceptionist]
+
+    @extend_schema(
+        summary="GET an Appointment",
+        description="Get an appointment from a primary key from the database",
+        request=AppointmentSerializer,
+        responses=AppointmentSerializer,
+    )
     def patch(self, request, pk):
         appointment = Appointment.objects.get(pk=pk)
         serializer = AppointmentSerializer(appointment, data=request.data, partial=True)
@@ -364,6 +396,8 @@ class appointmentView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class addNewDoctorView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsReceptionist]
 
     @extend_schema(
         summary="PATCH a Patient's Doctors",

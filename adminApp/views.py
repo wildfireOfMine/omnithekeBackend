@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.permissions import IsAuthenticated
 from authApp.serializers import RegisterSerializer
+from adminApp.permissions import IsAdmin, IsReceptionist
 from adminApp.models import Administrator
 from doctorApp.models import Doctor
 from patientApp.models import Patient
@@ -17,7 +18,7 @@ from django.db import transaction
 
 class doctorView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin, IsReceptionist]
 
     @extend_schema(
         summary="GET all Doctors",
@@ -70,7 +71,7 @@ class doctorView(APIView):
 
 class doctorViewPK(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
         summary="GET a Doctor",
@@ -127,7 +128,7 @@ class doctorViewPK(APIView):
 
 class patientView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin, IsReceptionist]
 
     @extend_schema(
         summary="GET all Patients",
@@ -179,7 +180,7 @@ class patientView(APIView):
 
 class patientViewPK(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
         summary="GET a Patient",
@@ -233,6 +234,9 @@ class patientViewPK(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class administratorView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdmin]
+
     @extend_schema(
         summary="GET your Administrator Profile",
         description="Get your administrator profile",
@@ -263,7 +267,7 @@ class administratorView(APIView):
         
 class receptionistView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
         summary="GET all Receptionists",
