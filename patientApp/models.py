@@ -1,5 +1,6 @@
 from django.db import models
 from adminApp.models import Person
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 # Create your models here.
@@ -10,7 +11,7 @@ class Patient(Person):
     office = models.ForeignKey("officeApp.Office", on_delete=models.CASCADE, related_name="patients", null=True, blank=True)
 
     def __str__(self):
-        return "PATIENT: %s, %s" % (self.firstSurname, self.name)
+        return "%s, %s" % (self.firstSurname, self.name)
     
 
 class Appointment(models.Model):
@@ -24,7 +25,11 @@ class Appointment(models.Model):
     confirmed = models.BooleanField(default=False)
 
     def __str__(self):
-        return "APPOINTMENT %s: %s/%s" % (self.timestamp.strftime("%d-%m-%Y"), self.beginning.strftime("%d-%m-%Y"), self.ending.strftime("%d-%m-%Y"))
+        beginning = timezone.localtime(self.beginning)
+        ending = timezone.localtime(self.ending)
+
+        return "APPOINTMENT %s: %s, %s/%s" % (self.timestamp.strftime("%d-%m-%Y"), self.beginning.strftime("%d-%m-%Y"), 
+                                              beginning.strftime("%H:%M"), ending.strftime("%H:%M"))
     
 class Incident(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="incidents")

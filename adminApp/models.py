@@ -32,4 +32,4 @@ class Administrator(Person):
     office = models.OneToOneField("officeApp.Office", on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return "ADMIN: %s, %s" % (self.firstSurname, self.name)
+        return "%s, %s" % (self.firstSurname, self.name)

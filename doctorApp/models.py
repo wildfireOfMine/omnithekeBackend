@@ -9,7 +9,7 @@ class Doctor(Person):
     office = models.ManyToManyField("officeApp.Office", related_name="doctors")
 
     def __str__(self):
-        return "DOCTOR: %s, %s" % (self.firstSurname, self.name)
+        return "%s, %s" % (self.firstSurname, self.name)
     
 
 class Report(models.Model):
