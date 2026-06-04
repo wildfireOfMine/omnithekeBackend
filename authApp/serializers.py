@@ -28,6 +28,7 @@ class TokenSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         user = self.user
         role = None
+        mustChange = False
         
 
         if hasattr(user, 'doctor'):
