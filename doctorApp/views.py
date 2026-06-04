@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from adminApp.permissions import IsDoctor
 from drf_spectacular.utils import extend_schema
 from adminApp.serializers import DoctorSerializer, PatientSerializer
 from doctorApp.serializers import NewDoctorSerializer, IncidentSerializer, MessageSerializer, ReportSerializer
@@ -15,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 
 class doctorProfileView(APIView):
     authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
 
     @extend_schema(
         summary="GET your Doctor Profile",
@@ -49,6 +51,7 @@ class doctorProfileView(APIView):
 
 class myPatientsView(APIView):
     authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
 
     @extend_schema(
         summary="GET your Patients",
@@ -77,6 +80,8 @@ class myPatientsView(APIView):
 
     
 class appointmentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
 
     @extend_schema(
         summary="GET your Appointments",
@@ -84,7 +89,7 @@ class appointmentsView(APIView):
         responses=AppointmentSerializer
     )
     def get(self, request):
-        appointments = Appointment.objects.filter(doctor=request.user.doctor)
+        appointments = Appointment.objects.filter(doctor=request.user.doctor).order_by("-timestamp")
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
     
@@ -103,6 +108,9 @@ class appointmentsView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class appointmentsPKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET an Appointment",
         description="Get an appointment with your doctor from the database",
@@ -155,6 +163,9 @@ class appointmentsPKView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class reportsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET your Report",
         description="Get the reports with your doctor from the database",
@@ -187,6 +198,9 @@ class reportsView(APIView):
         pass
 
 class reportsPKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET a Report",
         description="Get a report with your doctor from the database",
@@ -239,6 +253,9 @@ class reportsPKView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class incidentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET your Incidents",
         description="Get the incidents with your doctor from the database",
@@ -264,6 +281,9 @@ class incidentsView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class incidentsViewPK(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET an Active Incident",
         description="Get an incident with your doctor from the database",
@@ -316,6 +336,8 @@ class incidentsViewPK(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class messagesView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
     
     @extend_schema(
         summary="GET your Messages",
@@ -328,6 +350,9 @@ class messagesView(APIView):
         return Response(serializer.data)
 
 class messagesViewPK(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET a Message",
         description="Get a Message with your doctor from the database",
@@ -339,6 +364,9 @@ class messagesViewPK(APIView):
         return Response(serializer.data)
     
 class patientIncidentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsDoctor]
+
     @extend_schema(
         summary="GET all Incidents",
         description="Get all Incidents from a patient from the database",
@@ -352,7 +380,7 @@ class patientIncidentsView(APIView):
     
 class patientViewPK(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsDoctor]
 
     @extend_schema(
         summary="GET a Patient",

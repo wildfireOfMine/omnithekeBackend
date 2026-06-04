@@ -10,7 +10,7 @@ class Patient(Person):
     office = models.ForeignKey("officeApp.Office", on_delete=models.CASCADE, related_name="patients", null=True, blank=True)
 
     def __str__(self):
-        return "%s, %s" % (self.firstSurname, self.name)
+        return "PATIENT: %s, %s" % (self.firstSurname, self.name)
     
 
 class Appointment(models.Model):
@@ -24,7 +24,7 @@ class Appointment(models.Model):
     confirmed = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s & %s-%s" % (self.timestamp, self.beginning, self.ending)
+        return "APPOINTMENT %s: %s/%s" % (self.timestamp.strftime("%d-%m-%Y"), self.beginning.strftime("%d-%m-%Y"), self.ending.strftime("%d-%m-%Y"))
     
 class Incident(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="incidents")
@@ -34,7 +34,10 @@ class Incident(models.Model):
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return "%s - %s" % (self.patient, self.beginningDate)
+        if self.endingDate:
+            return "%s - %s/%s" % (self.patient, self.beginningDate.strftime("%d-%m-%Y"), self.endingDate.strftime("%d-%m-%Y"))
+        else:
+            return "%s - %s" % (self.patient, self.beginningDate.strftime("%d-%m-%Y"))
     
 class Message(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="messages")
