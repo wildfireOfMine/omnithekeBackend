@@ -20,6 +20,7 @@ class Person(models.Model):
     postCode = models.CharField(max_length=15)
     country = models.CharField(max_length=100)
     telephone = models.CharField(max_length=15)
+    mustChangePassword = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -32,4 +33,4 @@ class Administrator(Person):
     office = models.OneToOneField("officeApp.Office", on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return "ADMIN: %s, %s" % (self.firstSurname, self.name)
+        return "%s, %s" % (self.firstSurname, self.name)

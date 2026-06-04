@@ -58,6 +58,7 @@ class doctorView(APIView):
                 doctorData["office"] = [request.user.administrator.office.pk]
             elif hasattr(request.user, "receptionist"):
                 doctorData["office"] = [request.user.receptionist.office.pk]
+            doctorData["mustChangePassword"] = True
             serializerDoctor = DoctorSerializer(data=doctorData)
             serializerDoctor.is_valid(raise_exception=True) 
 
@@ -168,6 +169,7 @@ class patientView(APIView):
             elif hasattr(request.user, "receptionist"):
                 patientData["office"] = request.user.receptionist.office.pk
             patientData["doctors"] = []
+            patientData["mustChangePassword"] = True
             serializerPatient = PatientSerializer(data=patientData)
             serializerPatient.is_valid(raise_exception=True) 
 
@@ -304,6 +306,7 @@ class receptionistView(APIView):
             print(receptionistData)
             receptionistData["djangoUser"] = user.pk
             receptionistData["office"] = request.user.administrator.office.pk
+            receptionistData["mustChangePassword"] = True
             serializerReceptionist = ReceptionistSerializer(data=receptionistData)
             serializerReceptionist.is_valid(raise_exception=True) 
 

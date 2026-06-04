@@ -87,3 +87,25 @@ class adminView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class changePasswordView(APIView):
+
+    def patch(self, request):
+        user = request.user
+        print(request.data)
+        user.set_password(request.data.get("newPassword"))
+        user.save()
+        
+        if hasattr(user, "patient"):
+            user.patient.mustChangePassword = False
+            user.patient.save()
+        
+        elif hasattr(user, "doctor"):
+            user.doctor.mustChangePassword = False
+            user.doctor.save()
+        
+        elif hasattr(user, "receptionist"):
+            user.receptionist.mustChangePassword = False
+            user.receptionist.save()
+
+        return Response(status=status.HTTP_200_OK)

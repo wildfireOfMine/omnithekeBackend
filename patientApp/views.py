@@ -206,3 +206,19 @@ class availabilityView(APIView):
                 availableHours.append(f"{hour:02d}:00")
         
         return Response(availableHours)
+
+class incidentPKView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsPatient]
+
+    @extend_schema(
+        summary="GET your Incident",
+        description="Get your incident from your patient profile through a primary key",
+        responses=IncidentSerializer
+    )
+    def get(self, request, pk):
+        incident = Incident.objects.get(pk=pk)
+        reports = Report.objects.filter(incident=incident)
+        serializer = ReportSerializer(reports, many=True)
+        return Response(serializer.data)
+
