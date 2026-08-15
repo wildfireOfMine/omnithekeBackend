@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = ['omnitheke-backend.vercel.app']
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = "usersApp.Usuario"
 
@@ -85,6 +85,16 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ.get('DB_NAME'),
+#         "USER": os.environ.get('DB_USER'),
+#         "PASSWORD": os.environ.get('DB_PASSWORD'),
+#         "HOST": os.environ.get('DB_HOST'),
+#         "PORT": os.environ.get('DB_PORT'),
+#     }
+# }
 
 
 # Password validation
