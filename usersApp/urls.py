@@ -1,0 +1,10 @@
+from django.contrib import admin
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.urls import path
+from usersApp import views
+
+urlpatterns = [
+
+    path('login/', views.ObtainToken.as_view()),
+
+]
