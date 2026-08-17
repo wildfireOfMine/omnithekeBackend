@@ -20,3 +20,7 @@ class UsuarioAdmin(UserAdmin):
 
 admin.site.register(Especialidad)
 admin.site.register(Doctor)
+admin.site.register(Aseguradora)
+admin.site.register(Paciente)
+admin.site.register(Recepcionista)
+admin.site.register(Administrador)

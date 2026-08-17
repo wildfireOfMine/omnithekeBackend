@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from usersApp.models import Doctor
 
 class IniciarSesionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +27,8 @@ class TokenSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         
         return data
+
+class DoctorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctor
+        fields = "__all__"
