@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework_simplejwt.views import TokenObtainPairView
 from usersApp.serializers import TokenSerializer, DoctorSerializer
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
@@ -14,6 +15,7 @@ class ObtenerToken(TokenObtainPairView):
     serializer_class = TokenSerializer
 
 class todosDoctoresView(APIView):
+    permission_classes = [AllowAny]
     @extend_schema(
         summary="GET de Doctores",
         description="GET de todos los Doctores en la BBDD",
