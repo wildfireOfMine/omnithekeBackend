@@ -25,7 +25,7 @@ class TokenSerializer(TokenObtainPairSerializer):
     
     def validate(self, attrs):
         data = super().validate(attrs)
-        
+        data["rol"] = self.user.rol
         return data
 
 class DoctorSerializer(serializers.ModelSerializer):
