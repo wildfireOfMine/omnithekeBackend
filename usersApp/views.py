@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework_simplejwt.views import TokenObtainPairView
 from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
