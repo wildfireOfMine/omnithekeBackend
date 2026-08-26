@@ -30,4 +30,4 @@ class Cita(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS, default="pendiente")
 
     def __str__(self):
-        return f"Cita {self.fechaHora} - Estado: {self.estado} - Paciente: {self.paciente}"
+        return f"Cita {self.fechaInicio} - Estado: {self.estado} - Paciente: {self.paciente}"

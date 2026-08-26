@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from usersApp.models import Doctor, Paciente, Usuario
+from usersApp.models import Doctor, Paciente, Usuario, Especialidad
 
 class IniciarSesionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,8 @@ class RegistrarseSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
         documento = validated_data["documentoIdentidad"]
-        usuario = Usuario.objects.create_user(username=documento, password=password, rol="paciente")
+        correo = validated_data["correo"]
+        usuario = Usuario.objects.create_user(username=documento, password=password, rol="paciente", email=correo)
         paciente = Paciente.objects.create(usuarioBase=usuario, **validated_data)
         return paciente
 
@@ -38,6 +39,12 @@ class TokenSerializer(TokenObtainPairSerializer):
         return data
 
 class DoctorSerializer(serializers.ModelSerializer):
+    especialidad = serializers.CharField(source="especialidad.nombre")
     class Meta:
         model = Doctor
+        fields = "__all__"
+
+class EspecialidadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Especialidad
         fields = "__all__"
