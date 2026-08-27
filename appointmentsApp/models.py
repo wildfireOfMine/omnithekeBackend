@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+
 
 # Create your models here.
 
@@ -7,6 +9,30 @@ class Calendario(models.Model):
 
     def __str__(self):
         return f"Calendario de {self.doctor}"
+
+class Horario(models.Model):
+    DIAS_SEMANA = (
+        (0, "Lunes"),
+        (1, "Martes"),
+        (2, "Miércoles"),
+        (3, "Jueves"),
+        (4, "Viernes"),
+        (5, "Sábado"),
+        (6, "Domingo"),
+    )
+
+    calendario = models.ForeignKey(Calendario, on_delete=models.CASCADE, related_name="horarios")
+
+    diaSemana = models.IntegerField(choices=DIAS_SEMANA)
+    horaInicio = models.TimeField()
+    horaFin = models.TimeField()
+
+    def __str__(self):
+        return (
+            f"{self.calendario.doctor} - "
+            f"{self.get_diaSemana_display()} - "
+            f"{self.horaInicio} a {self.horaFin}"
+        )
 
 class Cita(models.Model):
     calendario = models.ForeignKey(Calendario, on_delete=models.CASCADE, related_name="citas")
@@ -31,3 +57,4 @@ class Cita(models.Model):
 
     def __str__(self):
         return f"Cita {self.fechaInicio} - Estado: {self.estado} - Paciente: {self.paciente}"
+

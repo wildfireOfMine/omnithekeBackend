@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework_simplejwt.views import TokenObtainPairView
-from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer
+from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-from usersApp.models import Doctor, Especialidad
+from usersApp.models import Doctor, Especialidad, Aseguradora
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -65,11 +65,11 @@ class todosDoctoresView(generics.ListAPIView):
         "segundoApellido",
     ]
 
-class todasEspecialidades(APIView):
+class todasEspecialidadesView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        summary="GET de todos las Especialidades",
+        summary="GET de todas las Especialidades",
         description="Consigue todas las especialidades de la BBDD",
         request=EspecialidadSerializer,
         responses=EspecialidadSerializer(many=True),
@@ -78,4 +78,17 @@ class todasEspecialidades(APIView):
         especialidades = Especialidad.objects.all()
         serializador = EspecialidadSerializer(especialidades, many=True)
         return Response(serializador.data)
-    
+
+class todasAseguradorasView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de todas las Aseguradoras",
+        description="Consigue todas las aseguradoras de la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer(many=True),
+    )
+    def get(self, request):
+        aseguradoras = Aseguradora.objects.all()
+        serializador = AseguradoraSerializer(aseguradoras, many=True)
+        return Response(serializador.data)
