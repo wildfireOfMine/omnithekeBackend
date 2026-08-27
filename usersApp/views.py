@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework_simplejwt.views import TokenObtainPairView
-from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer
+from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +8,10 @@ from rest_framework.views import APIView
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-from usersApp.models import Doctor
+from usersApp.models import Doctor, Especialidad, Aseguradora
+from rest_framework import generics
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 
 # Create your views here.
 
@@ -33,15 +36,59 @@ class registrarseView(APIView):
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class todosDoctoresView(APIView):
-    permission_classes = [AllowAny]
-    @extend_schema(
+@extend_schema(
         summary="GET de Doctores",
         description="GET de todos los Doctores en la BBDD",
-        request=DoctorSerializer,
         responses=DoctorSerializer(many=True),
+)
+class todosDoctoresView(generics.ListAPIView):
+
+    permission_classes = [AllowAny]
+    
+
+    queryset = Doctor.objects.select_related("especialidad").all()
+
+    serializer_class = DoctorSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "especialidad",
+    ]
+
+    search_fields = [
+        "nombre",
+        "primerApellido",
+        "segundoApellido",
+    ]
+
+class todasEspecialidadesView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de todas las Especialidades",
+        description="Consigue todas las especialidades de la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer(many=True),
     )
     def get(self, request):
-        doctores = Doctor.objects.all()
-        serializador = DoctorSerializer(doctores, many=True)
+        especialidades = Especialidad.objects.all()
+        serializador = EspecialidadSerializer(especialidades, many=True)
+        return Response(serializador.data)
+
+class todasAseguradorasView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de todas las Aseguradoras",
+        description="Consigue todas las aseguradoras de la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer(many=True),
+    )
+    def get(self, request):
+        aseguradoras = Aseguradora.objects.all()
+        serializador = AseguradoraSerializer(aseguradoras, many=True)
         return Response(serializador.data)
