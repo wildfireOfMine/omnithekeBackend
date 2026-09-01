@@ -4,4 +4,5 @@ from appointmentsApp import views
 
 urlpatterns = [
     path('misCitas/', views.todasCitasPacienteView.as_view()),
+    path('horariosDisponibles/<int:pk>/', views.horariosView.as_view()),
 ]

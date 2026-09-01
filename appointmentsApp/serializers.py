@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from appointmentsApp.models import Cita
+from appointmentsApp.models import Cita, Horario
 
 class CitaSerializer(serializers.ModelSerializer):
     doctor = serializers.SerializerMethodField()
@@ -10,3 +10,8 @@ class CitaSerializer(serializers.ModelSerializer):
     def get_doctor(self, obj):
         doctor = obj.calendario.doctor
         return f"{doctor.nombre} {doctor.primerApellido}"
+
+class HorarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Horario
+        fields = "__all__"

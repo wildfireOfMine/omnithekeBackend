@@ -1,11 +1,13 @@
 from django.shortcuts import render
-from usersApp.models import Paciente
-from appointmentsApp.models import Cita
+from usersApp.models import Paciente, Doctor
+from appointmentsApp.models import Cita, Horario
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.filters import SearchFilter
-from appointmentsApp.serializers import CitaSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from appointmentsApp.serializers import CitaSerializer, HorarioSerializer
 from rest_framework import generics
 
 # Create your views here.
@@ -42,3 +44,17 @@ class todasCitasPacienteView(generics.ListAPIView):
         "calendario__doctor__primerApellido",
         "calendario__doctor__segundoApellido",
     ]
+
+class horariosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de los Horarios de un Doctor",
+        description="Consigue los horarios de un Doctor",
+        request=HorarioSerializer,
+        responses=HorarioSerializer(many=True),
+    )
+    def get(self, request, pk):
+            horarios = Horario.objects.filter(calendario__doctor=pk)
+            serializador = HorarioSerializer(horarios, many=True)
+            return Response(serializador.data)
