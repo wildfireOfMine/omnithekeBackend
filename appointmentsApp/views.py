@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from usersApp.models import Paciente, Doctor
-from appointmentsApp.models import Cita, Horario
+from appointmentsApp.models import Cita, Horario, Calendario
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from appointmentsApp.serializers import CitaSerializer, HorarioSerializer
 from rest_framework import generics
+from rest_framework import permissions, status
+from datetime import datetime, time, timedelta
+from django.utils import timezone
 
 # Create your views here.
 
@@ -58,3 +61,60 @@ class horariosView(APIView):
             horarios = Horario.objects.filter(calendario__doctor=pk)
             serializador = HorarioSerializer(horarios, many=True)
             return Response(serializador.data)
+
+class horasDisponiblesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk, fecha):
+
+        fechaEscogida = datetime.strptime(fecha, "%Y-%m-%d").date()
+        diaSemana = (fechaEscogida.weekday() + 1) % 7
+
+        horario = Horario.objects.filter(calendario__doctor_id=pk, diaSemana=diaSemana).first()
+
+        if not horario:
+            return Response([])
+        else:
+            citas = Cita.objects.filter(calendario=horario.calendario,fechaInicio__date=fechaEscogida)
+
+            horasDisponibles = []
+            horaInicio = horario.horaInicio.hour
+            horaFin = horario.horaFin.hour
+
+            for hora in range(horaInicio, horaFin):
+
+                inicioSlot = datetime.combine(fechaEscogida, time(hour=hora))
+                finSlot = inicioSlot + timedelta(hours=1)
+
+                citaOcupada = citas.filter(fechaInicio__lt=finSlot, fechaFin__gt=inicioSlot).exists()
+
+                if not citaOcupada:
+                    horasDisponibles.append(f"{hora:02d}:00")
+
+            return Response(horasDisponibles)
+    
+class crearCitaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="POST de una cita",
+        description="Crea una cita en la BD",
+        request=CitaSerializer,
+        responses=CitaSerializer(many=True),
+    )
+    def post(self, request):
+        print(request.data)
+        print(self.request.user.paciente)
+        print(Calendario.objects.get(pk=request.data["doctor"]))
+        request.data["calendario"] = Calendario.objects.get(pk=request.data["doctor"]).pk
+        request.data["paciente"] = self.request.user.paciente.id
+        request.data.pop("doctor")
+        
+        serializador = CitaSerializer(data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print("NO FUNCIONÓ PAPU")
+            print(serializador.errors);
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
