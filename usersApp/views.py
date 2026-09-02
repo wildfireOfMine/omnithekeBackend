@@ -92,3 +92,17 @@ class todasAseguradorasView(APIView):
         aseguradoras = Aseguradora.objects.all()
         serializador = AseguradoraSerializer(aseguradoras, many=True)
         return Response(serializador.data)
+
+class doctorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de un Doctor",
+        description="Consigue la información de un Doctor",
+        request=DoctorSerializer,
+        responses=DoctorSerializer(many=False),
+    )
+    def get(self, request, pk):
+        doctor = Doctor.objects.get(pk=pk)
+        serializador = DoctorSerializer(doctor, many=False)
+        return Response(serializador.data)
