@@ -29,7 +29,7 @@ class todasCitasPacienteView(generics.ListAPIView):
     serializer_class = CitaSerializer
 
     def get_queryset(self):
-        return Cita.objects.filter(paciente__usuarioBase=self.request.user).order_by("horaCreacion")
+        return Cita.objects.filter(paciente__usuarioBase=self.request.user).order_by("-horaCreacion")
 
     filter_backends = [
         DjangoFilterBackend,
