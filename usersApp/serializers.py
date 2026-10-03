@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
 from usersApp.models import Doctor, Paciente, Usuario, Especialidad, Aseguradora
 
 class IniciarSesionSerializer(serializers.ModelSerializer):
@@ -34,8 +35,32 @@ class RegistrarseSerializer(serializers.ModelSerializer):
 class TokenSerializer(TokenObtainPairSerializer):
     
     def validate(self, attrs):
+        identificador = attrs.get(self.username_field)
+
+        if "@" in identificador:
+            usuario = Usuario.objects.filter(email__iexact=identificador).first()
+
+            if usuario is None:
+                raise AuthenticationFailed("No se ha encontrado la cuenta")
+            
+            attrs[self.username_field] = usuario.get_username()
+
         data = super().validate(attrs)
         data["rol"] = self.user.rol
+        
+        if self.user.rol == "paciente":
+            perfil = self.user.paciente
+        elif self.user.rol == "doctor":
+            perfil = self.user.doctor
+        elif self.user.rol == "recepcionista":
+            perfil = self.user.recepcionista
+        elif self.user.rol == "admin":
+            perfil = self.user.administrador
+
+        data["nombre"] = perfil.nombre
+        data["documento"] = self.user.username
+        data["correo"] = self.user.email
+
         return data
 
 class DoctorSerializer(serializers.ModelSerializer):
