@@ -33,6 +33,7 @@ class Persona(models.Model):
     pais = models.CharField(max_length=100)
     correo = models.EmailField(null=False, blank=False)
     telefono = models.CharField(max_length=15)
+    fechaNacimiento = models.DateField(null=True, blank=True)
 
     class Meta:
             abstract = True
