@@ -3,6 +3,12 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from usersApp.models import Doctor, Paciente, Usuario, Especialidad, Aseguradora
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.db import transaction
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 
 class IniciarSesionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,14 +22,21 @@ class IniciarSesionSerializer(serializers.ModelSerializer):
 class RegistrarseSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
+    correo = serializers.EmailField(
+        error_messages={
+            "invalid": "El correo electrónico no es válido"
+        }
+    )
+
     class Meta:
         model = Paciente
         fields = [
             "nombre", "primerApellido", "segundoApellido",
             "sexo", "tipoDocumento", "documentoIdentidad", "pais", "correo", 
-            "telefono", "grupoSanguineo", "aseguradora", "password",
+            "telefono", "grupoSanguineo", "aseguradora", "password", "fechaNacimiento"
         ]
 
+    @transaction.atomic
     def create(self, validated_data):
         password = validated_data.pop("password")
         documento = validated_data["documentoIdentidad"]
@@ -31,6 +44,43 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         usuario = Usuario.objects.create_user(username=documento, password=password, rol="paciente", email=correo)
         paciente = Paciente.objects.create(usuarioBase=usuario, **validated_data)
         return paciente
+
+    def validate_correo(self, correo):
+        validate_email(correo)
+
+        return correo
+
+    def validate_telefono(self, telefono):
+        if len(telefono) != 9:
+            raise serializers.ValidationError("El número de teléfono no es válido")
+        else:
+            return telefono
+
+    def validate_documentoIdentidad(self, dni):
+        dni = dni.strip().upper()
+
+        if len(dni) != 9 or not dni[:8].isdigit():
+            raise serializers.ValidationError("El DNI/NIF no es válido")
+        else:
+            letras = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+            if letras[int(dni[:8]) % 23] != dni[8]:
+                raise serializers.ValidationError("El DNI/NIF no es válido")
+            else:
+                return dni
+
+    def validate_fechaNacimiento(self, fechaNacimiento):
+        hoy = date.today()
+        fechaMinima = hoy - relativedelta(years=110)
+
+        if fechaNacimiento < fechaMinima:
+            raise serializers.ValidationError("La persona no puede tener más de 110 años")
+        elif fechaNacimiento > hoy:
+            raise serializers.ValidationError("La fecha de nacimiento no puede ser en el futuro")
+        else:
+            return fechaNacimiento
+
+    
 
 class TokenSerializer(TokenObtainPairSerializer):
     

@@ -12,6 +12,7 @@ from rest_framework import generics
 from rest_framework import permissions, status
 from datetime import datetime, time, timedelta
 from django.utils import timezone
+from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
 
 # Create your views here.
 
@@ -29,7 +30,27 @@ class todasCitasPacienteView(generics.ListAPIView):
     serializer_class = CitaSerializer
 
     def get_queryset(self):
-        return Cita.objects.filter(paciente__usuarioBase=self.request.user).order_by("-horaCreacion")
+        return (
+            Cita.objects.filter(paciente__usuarioBase=self.request.user)
+            .annotate(
+                prioridad=Case(
+                    When(estado="pendiente", then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                ),
+                orden_pendiente=Case(
+                    When(estado="pendiente", then=F("fechaInicio")),
+                    default=Value(None),
+                    output_field=DateTimeField(),
+                ),
+                orden_resto=Case(
+                    When(estado="pendiente", then=Value(None)),
+                    default=F("horaCreacion"),
+                    output_field=DateTimeField(),
+                ),
+            )
+            .order_by("prioridad", "-orden_pendiente", "orden_resto",)
+        )
 
     filter_backends = [
         DjangoFilterBackend,
