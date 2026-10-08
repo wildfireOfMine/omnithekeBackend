@@ -12,6 +12,8 @@ from rest_framework import generics
 from rest_framework import permissions, status
 from datetime import datetime, time, timedelta
 from django.utils import timezone
+from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
+from django.core.mail import send_mail
 
 # Create your views here.
 
@@ -29,7 +31,27 @@ class todasCitasPacienteView(generics.ListAPIView):
     serializer_class = CitaSerializer
 
     def get_queryset(self):
-        return Cita.objects.filter(paciente__usuarioBase=self.request.user).order_by("-horaCreacion")
+        return (
+            Cita.objects.filter(paciente__usuarioBase=self.request.user)
+            .annotate(
+                prioridad=Case(
+                    When(estado="pendiente", then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                ),
+                orden_pendiente=Case(
+                    When(estado="pendiente", then=F("fechaInicio")),
+                    default=Value(None),
+                    output_field=DateTimeField(),
+                ),
+                orden_resto=Case(
+                    When(estado="pendiente", then=Value(None)),
+                    default=F("horaCreacion"),
+                    output_field=DateTimeField(),
+                ),
+            )
+            .order_by("prioridad", "-orden_pendiente", "orden_resto",)
+        )
 
     filter_backends = [
         DjangoFilterBackend,
@@ -112,9 +134,19 @@ class crearCitaView(APIView):
         
         serializador = CitaSerializer(data=request.data)
         if serializador.is_valid():
-            serializador.save()
+            cita = serializador.save()
+            send_mail(
+                subject="Nueva cita médica - Omnitheke",
+                message=f"""
+            Hola, {cita.paciente.nombre}.
+            Tiene una nueva cita médica en Omnitheke con el doctor {cita.calendario.doctor.nombre}, el día {cita.fechaInicio.strftime("%d/%m/%Y")} a las {cita.fechaInicio.strftime("%H:%M")} por un caso de \"{cita.motivo}\".
+
+            Gracias por utilizar Omnitheke.
+            """,
+                from_email=None,
+                recipient_list=[cita.paciente.correo],
+            )
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
-            print("NO FUNCIONÓ PAPU")
             print(serializador.errors);
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
