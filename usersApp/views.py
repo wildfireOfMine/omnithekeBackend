@@ -133,7 +133,7 @@ class solicitarRecuperacionView(APIView):
                 token = default_token_generator.make_token(usuario)
                 uid = urlsafe_base64_encode(force_bytes(usuario.pk))
 
-                enlace = f"http://localhost:5173/restablecerContrasena/{uid}/{token}"
+                enlace = f"https://omnitheke.vercel.app/restablecerContrasena/{uid}/{token}"
 
                 send_mail(
                     subject="Restablece tu contraseña - Omnitheke",
