@@ -128,3 +128,30 @@ class AseguradoraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aseguradora
         fields = "__all__"
+
+class DocumentoSerializer(serializers.Serializer):
+
+    documento = serializers.CharField()
+
+    def validate(self, attrs):
+        documento = attrs.get("documento")
+
+        if "@" in documento:
+            try:
+                validate_email(documento)
+            except ValidationError:
+                raise serializers.ValidationError("El correo electrónico no es válido")
+        else:
+            dni = documento.strip().upper()
+            if len(dni) != 9 or not dni[:8].isdigit():
+                raise serializers.ValidationError("El DNI/NIF no es válido")
+            else:
+                letras = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+                if letras[int(dni[:8]) % 23] != dni[8]:
+                    raise serializers.ValidationError("El DNI/NIF no es válido")
+
+
+        print(documento)
+
+        return attrs

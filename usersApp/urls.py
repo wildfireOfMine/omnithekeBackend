@@ -4,9 +4,10 @@ from django.urls import path
 from usersApp import views
 
 urlpatterns = [
-
     path('login/', views.ObtenerToken.as_view()),
     path('registrarse/', views.registrarseView.as_view()),
+    path('solicitarRecuperacion/', views.solicitarRecuperacionView.as_view()),
+    path('restablecerContrasena/', views.restablecerContrasenaView.as_view()),
     path('todosDoctores/', views.todosDoctoresView.as_view()),
     path('especialidades/', views.todasEspecialidadesView.as_view()),
     path('aseguradoras/', views.todasAseguradorasView.as_view()),
