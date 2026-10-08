@@ -13,6 +13,7 @@ from rest_framework import permissions, status
 from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
+from django.core.mail import send_mail
 
 # Create your views here.
 
@@ -133,9 +134,19 @@ class crearCitaView(APIView):
         
         serializador = CitaSerializer(data=request.data)
         if serializador.is_valid():
-            serializador.save()
+            cita = serializador.save()
+            send_mail(
+                subject="Nueva cita médica - Omnitheke",
+                message=f"""
+            Hola, {cita.paciente.nombre}.
+            Tiene una nueva cita médica en Omnitheke con el doctor {cita.calendario.doctor.nombre}, el día {cita.fechaInicio.strftime("%d/%m/%Y")} a las {cita.fechaInicio.strftime("%H:%M")} por un caso de \"{cita.motivo}\".
+
+            Gracias por utilizar Omnitheke.
+            """,
+                from_email=None,
+                recipient_list=[cita.paciente.correo],
+            )
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
-            print("NO FUNCIONÓ PAPU")
             print(serializador.errors);
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
