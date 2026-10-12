@@ -112,6 +112,48 @@ class doctorView(APIView):
         serializador = DoctorSerializer(doctor, many=False)
         return Response(serializador.data)
 
+class confirmarCuentaView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="POST de Confirmar una Cuenta",
+        description="Cuando una cuenta no esté confirmada, con esta función se puede verificar",
+    )
+    def post(self, request):
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        print(uid)
+        print(token)
+        try:
+            print("ENTRAA")
+            usuario_id = urlsafe_base64_decode(uid).decode()
+            usuario = Usuario.objects.get(pk=usuario_id)
+            print(usuario_id)
+            print(usuario)
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            print("HAY UN PROBLEMA")
+            return Response(
+                {"mensaje": "El enlace no es válido"}, 
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if usuario.is_active:
+            print("YA ACTIVA")
+            return Response({"mensaje": "La cuenta ya está confirmada"})
+
+        if not default_token_generator.check_token(usuario, token):
+            print("ENLACE NO VÁLIDO")
+            return Response(
+                {"mensaje": "El enlace no es válido o ha caducado"},
+                status=status.HTTP_400_BAD_REQUEST)
+        print("PASA TODO")
+        usuario.is_active = True
+        usuario.save(update_fields=["is_active"])
+
+        return Response({
+            "mensaje": "Cuenta confirmada correctamente, ya puedes iniciar sesión"
+        })
+
+
 class solicitarRecuperacionView(APIView):
     permission_classes = [AllowAny]
 
@@ -148,6 +190,65 @@ class solicitarRecuperacionView(APIView):
     """,
                     from_email=None,
                     recipient_list=[usuario.email],
+                    html_message=f"""
+                    <!DOCTYPE html>
+                    <html lang="es">
+                    <body style="
+                        margin: 0;
+                        padding: 30px;
+                        background-color: #f4f6f8;
+                        font-family: Arial, sans-serif;
+                        color: #333333;
+                    ">
+                        <div style="
+                            max-width: 500px;
+                            margin: 0 auto;
+                            padding: 32px;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            text-align: center;
+                        ">
+                            <h2 style="color: #1976d2;">
+                                Restablece tu contraseña
+                            </h2>
+
+                            <p style="line-height: 1.6;">
+                                Has solicitado restablecer la contraseña
+                                de tu cuenta de Omnitheke.
+                            </p>
+
+                            <p style="line-height: 1.6;">
+                                Pulsa el siguiente botón para crear una nueva contraseña:
+                            </p>
+
+                            <div style="margin: 30px 0;">
+                                <a href="{enlace}"
+                                style="
+                                    display: inline-block;
+                                    padding: 14px 28px;
+                                    background-color: #1976d2;
+                                    color: #ffffff;
+                                    text-decoration: none;
+                                    font-weight: bold;
+                                    border-radius: 8px;
+                                ">
+                                    Restablecer contraseña
+                                </a>
+                            </div>
+
+                            <p style="font-size: 13px; color: #777777; line-height: 1.5;">
+                                Si no has solicitado este cambio, puedes ignorar este correo.
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #eeeeee;">
+
+                            <p style="font-size: 12px; color: #999999;">
+                                Omnitheke · Recuperación de cuenta
+                            </p>
+                        </div>
+                    </body>
+                    </html>
+                    """,
                 )
 
             return Response(status=status.HTTP_200_OK)

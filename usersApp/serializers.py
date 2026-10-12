@@ -8,6 +8,10 @@ from django.core.validators import validate_email
 from django.db import transaction
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.core.mail import send_mail
 
 
 class IniciarSesionSerializer(serializers.ModelSerializer):
@@ -41,8 +45,83 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password")
         documento = validated_data["documentoIdentidad"]
         correo = validated_data["correo"]
-        usuario = Usuario.objects.create_user(username=documento, password=password, rol="paciente", email=correo)
+        usuario = Usuario.objects.create_user(username=documento, password=password, rol="paciente", email=correo, is_active=False)
         paciente = Paciente.objects.create(usuarioBase=usuario, **validated_data)
+
+        uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+        token = default_token_generator.make_token(usuario)
+
+        enlace = (
+            f"http://localhost:5173/confirmarCuenta/{uid}/{token}"
+        )
+
+        send_mail(
+            subject="Confirma tu cuenta - Omnitheke",
+            message=(
+                f"Hola {paciente.nombre},\n\n"
+                "Gracias por registrarte en Omnitheke.\n"
+                "Para activar tu cuenta, accede al siguiente enlace:\n\n"
+                f"{enlace}\n\n"
+                "Si no has creado esta cuenta, ignora este correo."
+            ),
+            from_email=None,
+            recipient_list=[usuario.email],
+            html_message=f"""
+                    <!DOCTYPE html>
+                    <html lang="es">
+                    <body style="
+                        margin: 0;
+                        padding: 30px;
+                        background-color: #f4f6f8;
+                        font-family: Arial, sans-serif;
+                        color: #333333;
+                    ">
+                        <div style="
+                            max-width: 500px;
+                            margin: 0 auto;
+                            padding: 32px;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            text-align: center;
+                        ">
+                            <h2 style="color: #1976d2;">
+                                ¡Bienvenido a Omnitheke!
+                            </h2>
+
+                            <p style="line-height: 1.6;">
+                                Hola {paciente.nombre},
+                            </p>
+
+                            <p style="line-height: 1.6;">
+                                Confirma tu correo para activar tu cuenta.
+                            </p>
+
+                            <div style="margin: 30px 0;">
+                                <a href="{enlace}"
+                                style="
+                                    display: inline-block;
+                                    padding: 14px 28px;
+                                    background-color: #1976d2;
+                                    color: #ffffff;
+                                    text-decoration: none;
+                                    font-weight: bold;
+                                    border-radius: 8px;
+                                ">
+                                    Confirmar mi cuenta
+                                </a>
+                            </div>
+
+                            <p style="font-size: 13px; color: #777777; line-height: 1.5;">
+                                Si no has solicitado este cambio, puedes ignorar este correo.
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #eeeeee;">
+
+                        </div>
+                    </body>
+                    </html>
+                    """,
+        )
         return paciente
 
     def validate_correo(self, correo):
