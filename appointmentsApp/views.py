@@ -71,6 +71,22 @@ class todasCitasPacienteView(generics.ListAPIView):
         "calendario__doctor__segundoApellido",
     ]
 
+class cancelarCitaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+            summary="PATCH de una Cita",
+            description="Cancela una cita cambiando su estado",
+    )
+    def patch(self, request, pk):
+        cita = Cita.objects.get(pk=pk)
+        serializador = CitaSerializer(cita, data=request.data, partial=True)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class horariosView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -81,9 +97,9 @@ class horariosView(APIView):
         responses=HorarioSerializer(many=True),
     )
     def get(self, request, pk):
-            horarios = Horario.objects.filter(calendario__doctor=pk)
-            serializador = HorarioSerializer(horarios, many=True)
-            return Response(serializador.data)
+        horarios = Horario.objects.filter(calendario__doctor=pk)
+        serializador = HorarioSerializer(horarios, many=True)
+        return Response(serializador.data)
 
 class horasDisponiblesView(APIView):
     permission_classes = [IsAuthenticated]
