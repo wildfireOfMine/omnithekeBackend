@@ -82,7 +82,7 @@ class Paciente(Persona):
     aseguradora = models.ForeignKey(Aseguradora, on_delete=models.PROTECT, related_name="pacientes", null=True, blank=True)
 
     def __str__(self):
-            return f"Paciente: {self.primerApellido}, {self.nombre}. Aseguradora: {self.aseguradora}"
+            return f"Paciente: {self.primerApellido}, {self.nombre}"
 
 class Recepcionista(Persona):
     def __str__(self):
