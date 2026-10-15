@@ -14,6 +14,7 @@ from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
 from django.core.mail import send_mail
+from django.utils.timezone import make_aware, get_current_timezone
 
 # Create your views here.
 
@@ -70,6 +71,22 @@ class todasCitasPacienteView(generics.ListAPIView):
         "calendario__doctor__segundoApellido",
     ]
 
+class cancelarCitaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+            summary="PATCH de una Cita",
+            description="Cancela una cita cambiando su estado",
+    )
+    def patch(self, request, pk):
+        cita = Cita.objects.get(pk=pk)
+        serializador = CitaSerializer(cita, data=request.data, partial=True)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class horariosView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,9 +97,9 @@ class horariosView(APIView):
         responses=HorarioSerializer(many=True),
     )
     def get(self, request, pk):
-            horarios = Horario.objects.filter(calendario__doctor=pk)
-            serializador = HorarioSerializer(horarios, many=True)
-            return Response(serializador.data)
+        horarios = Horario.objects.filter(calendario__doctor=pk)
+        serializador = HorarioSerializer(horarios, many=True)
+        return Response(serializador.data)
 
 class horasDisponiblesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -90,7 +107,7 @@ class horasDisponiblesView(APIView):
     def get(self, request, pk, fecha):
 
         fechaEscogida = datetime.strptime(fecha, "%Y-%m-%d").date()
-        diaSemana = (fechaEscogida.weekday() + 1) % 7
+        diaSemana = fechaEscogida.weekday()
 
         horario = Horario.objects.filter(calendario__doctor_id=pk, diaSemana=diaSemana).first()
 
@@ -106,6 +123,7 @@ class horasDisponiblesView(APIView):
             for hora in range(horaInicio, horaFin):
 
                 inicioSlot = datetime.combine(fechaEscogida, time(hour=hora))
+                inicioSlot = make_aware(inicioSlot, get_current_timezone())
                 finSlot = inicioSlot + timedelta(hours=1)
 
                 citaOcupada = citas.filter(fechaInicio__lt=finSlot, fechaFin__gt=inicioSlot).exists()

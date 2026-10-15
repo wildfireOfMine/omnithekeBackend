@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usersApp',
     'appointmentsApp',
+    'historyApp',
     'rest_framework',
     'drf_spectacular',
     'corsheaders',
