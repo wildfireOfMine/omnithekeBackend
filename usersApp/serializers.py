@@ -52,7 +52,7 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         token = default_token_generator.make_token(usuario)
 
         enlace = (
-            f"http://localhost:5173/confirmarCuenta/{uid}/{token}"
+            f"http://omnitheke.vercel.app/confirmarCuenta/{uid}/{token}"
         )
 
         send_mail(
