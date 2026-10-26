@@ -12,6 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail import send_mail
+from django.conf import settings
 
 
 class IniciarSesionSerializer(serializers.ModelSerializer):
@@ -51,9 +52,7 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         uid = urlsafe_base64_encode(force_bytes(usuario.pk))
         token = default_token_generator.make_token(usuario)
 
-        enlace = (
-            f"http://localhost:5173/confirmarCuenta/{uid}/{token}"
-        )
+        enlace = f"{settings.FRONTEND_URL}/confirmarCuenta/{uid}/{token}"
 
         send_mail(
             subject="Confirma tu cuenta - Omnitheke",
@@ -126,6 +125,10 @@ class RegistrarseSerializer(serializers.ModelSerializer):
 
     def validate_correo(self, correo):
         validate_email(correo)
+        correo = correo.strip().lower()
+
+        if Usuario.objects.filter(email__iexact=correo).exists():
+            raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
 
         return correo
 

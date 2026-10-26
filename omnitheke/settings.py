@@ -31,6 +31,8 @@ DEBUG = os.environ.get("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
+FRONTEND_URL = "http://localhost:5173"
+
 AUTH_USER_MODEL = "usersApp.Usuario"
 
 

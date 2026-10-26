@@ -17,6 +17,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.conf import settings
 
 # Create your views here.
 
@@ -125,27 +126,19 @@ class confirmarCuentaView(APIView):
         print(uid)
         print(token)
         try:
-            print("ENTRAA")
-            usuario_id = urlsafe_base64_decode(uid).decode()
-            usuario = Usuario.objects.get(pk=usuario_id)
-            print(usuario_id)
-            print(usuario)
+            usuarioId = urlsafe_base64_decode(uid).decode()
+            usuario = Usuario.objects.get(pk=usuarioId)
         except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
-            print("HAY UN PROBLEMA")
-            return Response(
-                {"mensaje": "El enlace no es válido"}, 
-                status=status.HTTP_400_BAD_REQUEST)
+            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
 
         if usuario.is_active:
-            print("YA ACTIVA")
             return Response({"mensaje": "La cuenta ya está confirmada"})
 
         if not default_token_generator.check_token(usuario, token):
-            print("ENLACE NO VÁLIDO")
             return Response(
                 {"mensaje": "El enlace no es válido o ha caducado"},
                 status=status.HTTP_400_BAD_REQUEST)
-        print("PASA TODO")
+
         usuario.is_active = True
         usuario.save(update_fields=["is_active"])
 
@@ -175,7 +168,7 @@ class solicitarRecuperacionView(APIView):
                 token = default_token_generator.make_token(usuario)
                 uid = urlsafe_base64_encode(force_bytes(usuario.pk))
 
-                enlace = f"http://localhost:5173/restablecerContrasena/{uid}/{token}"
+                enlace = f"{settings.FRONTEND_URL}/restablecerContrasena/{uid}/{token}"
 
                 send_mail(
                     subject="Restablece tu contraseña - Omnitheke",
