@@ -46,3 +46,17 @@ class todasConsultasPacienteView(generics.ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(paciente__usuarioBase=self.request.user)
+
+class consultaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de una Consulta",
+        description="Consigue la información de una Consulta",
+        request=ConsultaSerializer,
+        responses=ConsultaSerializer(many=False),
+    )
+    def get(self, request, pk):
+        consulta = Consulta.objects.get(pk=pk)
+        serializador = ConsultaSerializer(consulta, many=False)
+        return Response(serializador.data)
