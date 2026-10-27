@@ -114,7 +114,7 @@ class horasDisponiblesView(APIView):
         if not horario:
             return Response([])
         else:
-            citas = Cita.objects.filter(calendario=horario.calendario,fechaInicio__date=fechaEscogida)
+            citas = Cita.objects.filter(calendario=horario.calendario,fechaInicio__date=fechaEscogida).exclude(estado="cancelada")
 
             horasDisponibles = []
             horaInicio = horario.horaInicio.hour
