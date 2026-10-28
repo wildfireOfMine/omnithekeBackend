@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
-from usersApp.models import Doctor, Paciente, Usuario, Especialidad, Aseguradora
+from usersApp.models import Doctor, Paciente, Usuario, Especialidad, Aseguradora, Recepcionista
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import transaction
@@ -209,6 +209,11 @@ class EspecialidadSerializer(serializers.ModelSerializer):
 class AseguradoraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aseguradora
+        fields = "__all__"
+
+class RecepcionistaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recepcionista
         fields = "__all__"
 
 class DocumentoSerializer(serializers.Serializer):

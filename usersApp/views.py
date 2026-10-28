@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework_simplejwt.views import TokenObtainPairView
-from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer
+from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer
 from usersApp.models import Usuario
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-from usersApp.models import Doctor, Especialidad, Aseguradora
+from usersApp.models import Doctor, Especialidad, Aseguradora, Recepcionista
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -85,6 +85,32 @@ class todasEspecialidadesView(APIView):
         serializador = EspecialidadSerializer(especialidades, many=True)
         return Response(serializador.data)
 
+@extend_schema(
+        summary="GET de Especialidades filtradas",
+        description="GET de todas las Especialidades filtradas en la BBDD",
+        responses=EspecialidadSerializer(many=True),
+)
+class todasEspecialidadesListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    queryset = Especialidad.objects.all()
+
+    serializer_class = EspecialidadSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "nombre",
+    ]
+
+    search_fields = [
+        "nombre",
+    ]
+
 class todasAseguradorasView(APIView):
     permission_classes = [AllowAny]
 
@@ -99,6 +125,32 @@ class todasAseguradorasView(APIView):
         serializador = AseguradoraSerializer(aseguradoras, many=True)
         return Response(serializador.data)
 
+@extend_schema(
+        summary="GET de Aseguradoras filtradas",
+        description="GET de todas las Aseguradoras filtradas en la BBDD",
+        responses=AseguradoraSerializer(many=True),
+)
+class todasAseguradorasListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    queryset = Aseguradora.objects.all()
+
+    serializer_class = AseguradoraSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "nombre",
+    ]
+
+    search_fields = [
+        "nombre",
+    ]
+
 class doctorView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -112,6 +164,35 @@ class doctorView(APIView):
         doctor = Doctor.objects.get(pk=pk)
         serializador = DoctorSerializer(doctor, many=False)
         return Response(serializador.data)
+
+@extend_schema(
+        summary="GET de Recepcionistas filtrados",
+        description="GET de todas los Recepcionistas filtradas en la BBDD",
+        responses=RecepcionistaSerializer(many=True),
+)
+class todosRecepcionistasListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    queryset = Recepcionista.objects.all()
+
+    serializer_class = RecepcionistaSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "nombre",
+    ]
+
+    search_fields = [
+        "nombre",
+        "primerApellido",
+        "segundoApellido",
+    ]
+
 
 class confirmarCuentaView(APIView):
     permission_classes = [AllowAny]
