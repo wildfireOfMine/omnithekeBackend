@@ -11,6 +11,11 @@ urlpatterns = [
     path('restablecerContrasena/', views.restablecerContrasenaView.as_view()),
     path('todosDoctores/', views.todosDoctoresView.as_view()),
     path('especialidades/', views.todasEspecialidadesView.as_view()),
+    path('especialidadesList/', views.todasEspecialidadesListView.as_view()),
+    path('especialidadPost/', views.especialidadPostView.as_view()),
     path('aseguradoras/', views.todasAseguradorasView.as_view()),
+    path('aseguradorasList/', views.todasAseguradorasListView.as_view()),
+    path('aseguradoraPost/', views.aseguradoraPostView.as_view()),
+    path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
     path('doctor/<int:pk>/', views.doctorView.as_view()),
 ]
