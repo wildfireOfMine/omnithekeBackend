@@ -52,7 +52,7 @@ class todosDoctoresView(generics.ListAPIView):
     permission_classes = [AllowAny]
     
 
-    queryset = Doctor.objects.select_related("especialidad").all()
+    queryset = Doctor.objects.select_related("especialidad").all().order_by("id")
 
     serializer_class = DoctorSerializer
 
@@ -94,7 +94,7 @@ class todasEspecialidadesListView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
 
-    queryset = Especialidad.objects.all()
+    queryset = Especialidad.objects.all().order_by("id")
 
     serializer_class = EspecialidadSerializer
 
@@ -110,6 +110,24 @@ class todasEspecialidadesListView(generics.ListAPIView):
     search_fields = [
         "nombre",
     ]
+
+class especialidadPostView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="POST de una Especialidad",
+        description="Añade una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def post(self, request):
+        print(request.data)
+        serializador = EspecialidadSerializer(data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class todasAseguradorasView(APIView):
     permission_classes = [AllowAny]
