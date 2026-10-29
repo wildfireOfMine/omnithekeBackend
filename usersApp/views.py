@@ -152,7 +152,7 @@ class todasAseguradorasListView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
 
-    queryset = Aseguradora.objects.all()
+    queryset = Aseguradora.objects.all().order_by("id")
 
     serializer_class = AseguradoraSerializer
 
@@ -168,6 +168,23 @@ class todasAseguradorasListView(generics.ListAPIView):
     search_fields = [
         "nombre",
     ]
+
+class aseguradoraPostView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="POST de una Aseguradora",
+        description="Añade una aseguradora en la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer,
+    )
+    def post(self, request):
+        print(request.data)
+        serializador = AseguradoraSerializer(data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class doctorView(APIView):
     permission_classes = [IsAuthenticated]
