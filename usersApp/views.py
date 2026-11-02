@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from rest_framework_simplejwt.views import TokenObtainPairView
-from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer
+from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, UsuarioSerializer
 from usersApp.models import Usuario
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from django.core.validators import validate_email
+from django.db import transaction
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
@@ -18,6 +20,9 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.conf import settings
+from django.core.exceptions import ValidationError
+import secrets
+
 
 # Create your views here.
 
@@ -390,3 +395,101 @@ class restablecerContrasenaView(APIView):
         usuario.save()
 
         return Response({"mensaje": "Contraseña restablecida correctamente."}, status=status.HTTP_200_OK)
+
+class invitarUsuarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Invitar un Usuario",
+        description="Envía un correo electrónico con un enlace para generar un usuario",
+    )
+    @transaction.atomic
+    def post(self, request):
+        correo = request.data.get("correo")
+        rol = request.data.get("rol")
+        print(correo)
+        print(rol)
+        try:
+            validate_email(correo)
+
+            usuarioTemporal = f"Invitado: {secrets.token_hex(8)}"
+            contrasenaTemporal = secrets.token_urlsafe(32)
+
+            usuario = Usuario.objects.create_user(username=usuarioTemporal, password=contrasenaTemporal, rol=rol, email=correo, is_active=False)
+
+            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+            token = default_token_generator.make_token(usuario)
+
+            enlace = f"{settings.FRONTEND_URL}/{rol}/registrarse/{uid}/{token}"
+
+            send_mail(
+            subject="Confirma tu cuenta - Omnitheke",
+            message=(
+                f"Hola,\n\n"
+                f"Te han invitado para registrarte en Omnitheke como {rol}.\n"
+                "Para registrarte, accede al siguiente enlace:\n\n"
+                f"{enlace}\n\n"
+                "Si crees que se han confundido, ignora este correo."
+            ),
+            from_email=None,
+            recipient_list=[usuario.email],
+            html_message=f"""
+                    <!DOCTYPE html>
+                    <html lang="es">
+                    <body style="
+                        margin: 0;
+                        padding: 30px;
+                        background-color: #f4f6f8;
+                        font-family: Arial, sans-serif;
+                        color: #333333;
+                    ">
+                        <div style="
+                            max-width: 500px;
+                            margin: 0 auto;
+                            padding: 32px;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            text-align: center;
+                        ">
+                            <h2 style="color: #1976d2;">
+                                ¡Bienvenido a Omnitheke!
+                            </h2>
+
+                            <p style="line-height: 1.6;">
+                                Hola,
+                            </p>
+
+                            <p style="line-height: 1.6;">
+                                Te han invitado para registrarte en Omnitheke como {rol}.
+                            </p>
+
+                            <div style="margin: 30px 0;">
+                                <a href="{enlace}"
+                                style="
+                                    display: inline-block;
+                                    padding: 14px 28px;
+                                    background-color: #1976d2;
+                                    color: #ffffff;
+                                    text-decoration: none;
+                                    font-weight: bold;
+                                    border-radius: 8px;
+                                ">
+                                    Confirmar mi cuenta
+                                </a>
+                            </div>
+
+                            <p style="font-size: 13px; color: #777777; line-height: 1.5;">
+                                Si crees que se han confundido, ignora este correo.
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #eeeeee;">
+
+                        </div>
+                    </body>
+                    </html>
+                    """,
+        )
+
+            return Response(status=status.HTTP_200_OK)
+        except ValidationError:
+            return Response({"mensaje": "Algo ha ido mal... ¿Has escrito bien el correo?"}, status=status.HTTP_400_BAD_REQUEST)

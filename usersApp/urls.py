@@ -9,6 +9,7 @@ urlpatterns = [
     path('confirmarCuenta/', views.confirmarCuentaView.as_view()),
     path('solicitarRecuperacion/', views.solicitarRecuperacionView.as_view()),
     path('restablecerContrasena/', views.restablecerContrasenaView.as_view()),
+
     path('todosDoctores/', views.todosDoctoresView.as_view()),
     path('especialidades/', views.todasEspecialidadesView.as_view()),
     path('especialidadesList/', views.todasEspecialidadesListView.as_view()),
@@ -18,4 +19,6 @@ urlpatterns = [
     path('aseguradoraPost/', views.aseguradoraPostView.as_view()),
     path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
     path('doctor/<int:pk>/', views.doctorView.as_view()),
+    
+    path('invitarUsuario/', views.invitarUsuarioView.as_view()),
 ]

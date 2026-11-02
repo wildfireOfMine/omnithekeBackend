@@ -31,14 +31,11 @@ class todasConsultasPacienteView(generics.ListAPIView):
     ]
 
     filterset_fields = [
-        "doctor",
+        "doctor__especialidad",
         "cita",
     ]
 
     search_fields = [
-        "diagnostico",
-        "tratamiento",
-        "observaciones",
         "doctor__nombre",
         "doctor__primerApellido",
         "doctor__segundoApellido",

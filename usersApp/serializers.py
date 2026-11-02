@@ -242,3 +242,8 @@ class DocumentoSerializer(serializers.Serializer):
         print(documento)
 
         return attrs
+
+class UsuarioSerializer(serializers.Serializer):
+    class Meta:
+            model = Usuario
+            fields = "__all__"
