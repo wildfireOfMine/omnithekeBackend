@@ -197,6 +197,7 @@ class TokenSerializer(TokenObtainPairSerializer):
 
 class DoctorSerializer(serializers.ModelSerializer):
     especialidad = serializers.CharField(source="especialidad.nombre")
+    aseguradoras = serializers.StringRelatedField(many=True)
     class Meta:
         model = Doctor
         fields = "__all__"

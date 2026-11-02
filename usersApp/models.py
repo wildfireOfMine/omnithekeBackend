@@ -51,6 +51,7 @@ class Especialidad(models.Model):
 class Doctor(Persona):
     especialidad = models.ForeignKey(Especialidad, on_delete=models.PROTECT, related_name="doctores")
     numeroColegiado = models.CharField(unique=True, max_length=10)
+    aseguradoras = models.ManyToManyField("usersApp.Aseguradora", related_name="doctores", blank=True)
 
     def __str__(self):
         return f"Doctor: {self.primerApellido}, {self.nombre}. Colegiado: {self.numeroColegiado}"

@@ -68,6 +68,7 @@ class todosDoctoresView(generics.ListAPIView):
 
     filterset_fields = [
         "especialidad",
+        "aseguradoras",
     ]
 
     search_fields = [
