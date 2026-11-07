@@ -47,6 +47,45 @@ class registrarseView(APIView):
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class registrarseDoctorView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="POST de un Doctor",
+        description="Registra un usuario y un doctor en la BBDD",
+    )
+    @transaction.atomic
+    def post(self, request):
+        print(request.data)
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        print(uid)
+        print(token)
+        try:
+            usuarioId = urlsafe_base64_decode(uid).decode()
+            usuario = Usuario.objects.get(pk=usuarioId)
+            print(usuario.__dict__)
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
+        usuario.username = request.data["documentoIdentidad"]
+        usuario.first_name = request.data["nombre"]
+        usuario.last_name = request.data["primerApellido"]
+        usuario.set_password(request.data["password"])
+        usuario.is_active = True
+        usuario.save()
+
+        
+        request.data["usuarioBase"] = usuario.pk
+        
+        serializador = DoctorSerializer(data=request.data)
+        
+        if serializador.is_valid():
+            serializador.save()
+            print(serializador.data)
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @extend_schema(
         summary="GET de Doctores",
         description="GET de todos los Doctores en la BBDD",
@@ -186,10 +225,12 @@ class aseguradoraPostView(generics.ListAPIView):
     def post(self, request):
         print(request.data)
         serializador = AseguradoraSerializer(data=request.data)
+        print("PASA")
         if serializador.is_valid():
             serializador.save()
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
+            print(serializador.errors)
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class doctorView(APIView):

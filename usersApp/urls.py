@@ -6,6 +6,7 @@ from usersApp import views
 urlpatterns = [
     path('login/', views.ObtenerToken.as_view()),
     path('registrarse/', views.registrarseView.as_view()),
+    path('registrarseDoctor/', views.registrarseDoctorView.as_view()),
     path('confirmarCuenta/', views.confirmarCuentaView.as_view()),
     path('solicitarRecuperacion/', views.solicitarRecuperacionView.as_view()),
     path('restablecerContrasena/', views.restablecerContrasenaView.as_view()),
