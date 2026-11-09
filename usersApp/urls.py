@@ -19,6 +19,7 @@ urlpatterns = [
     path('aseguradorasList/', views.todasAseguradorasListView.as_view()),
     path('aseguradoraPost/', views.aseguradoraPostView.as_view()),
     path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
+    path('registrarseRecepcionista/', views.registrarseRecepcionistaView.as_view()),
     path('doctor/<int:pk>/', views.doctorView.as_view()),
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),

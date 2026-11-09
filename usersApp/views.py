@@ -247,6 +247,46 @@ class doctorView(APIView):
         serializador = DoctorSerializer(doctor, many=False)
         return Response(serializador.data)
 
+class registrarseRecepcionistaView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="POST de un Recepcionista",
+        description="Registra un usuario y un recepcionista en la BBDD",
+    )
+    @transaction.atomic
+    def post(self, request):
+        print(request.data)
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        print(uid)
+        print(token)
+        try:
+            usuarioId = urlsafe_base64_decode(uid).decode()
+            usuario = Usuario.objects.get(pk=usuarioId)
+            print(usuario.__dict__)
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
+        usuario.username = request.data["documentoIdentidad"]
+        usuario.first_name = request.data["nombre"]
+        usuario.last_name = request.data["primerApellido"]
+        usuario.set_password(request.data["password"])
+        usuario.is_active = True
+        usuario.save()
+
+        
+        request.data["usuarioBase"] = usuario.pk
+        
+        serializador = RecepcionistaSerializer(data=request.data)
+        
+        if serializador.is_valid():
+            serializador.save()
+            print(serializador.data)
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @extend_schema(
         summary="GET de Recepcionistas filtrados",
         description="GET de todas los Recepcionistas filtradas en la BBDD",

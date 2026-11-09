@@ -162,6 +162,13 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         else:
             return fechaNacimiento
 
+    def validate_password(self, password):
+
+        if len(password) < 8:
+            raise serializers.ValidationError("La contraseña tiene que tener como mínimo 8 carácteres")
+        else:
+            return password
+
     
 
 class TokenSerializer(TokenObtainPairSerializer):
@@ -197,12 +204,22 @@ class TokenSerializer(TokenObtainPairSerializer):
 
 class DoctorSerializer(serializers.ModelSerializer):
     especialidad = serializers.PrimaryKeyRelatedField(queryset=Especialidad.objects.all())
-    aseguradoras = serializers.StringRelatedField(many=True)
     nombreEspecialidad = serializers.CharField(source="especialidad.nombre", read_only=True)
+    aseguradoras = serializers.PrimaryKeyRelatedField(many=True, queryset=Aseguradora.objects.all())
+    nombreAseguradoras = serializers.SerializerMethodField()
+    
 
     class Meta:
         model = Doctor
         fields = "__all__"
+
+    def get_nombreAseguradoras(self, obj):
+        nombres = []
+
+        for aseguradora in obj.aseguradoras.all():
+            nombres.append(aseguradora.nombre)
+
+        return nombres
 
 class EspecialidadSerializer(serializers.ModelSerializer):
     class Meta:
