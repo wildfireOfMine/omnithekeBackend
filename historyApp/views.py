@@ -57,3 +57,35 @@ class consultaView(APIView):
         consulta = Consulta.objects.get(pk=pk)
         serializador = ConsultaSerializer(consulta, many=False)
         return Response(serializador.data)
+
+@extend_schema(
+        summary="GET de Consultas que has escrito",
+        description="GET de todas las Consultas que has escrito como Doctor",
+        responses=ConsultaSerializer(many=True),
+)
+class todasConsultasDoctorView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = ConsultaSerializer
+    
+    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all()
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "doctor__especialidad",
+        "cita",
+    ]
+
+    search_fields = [
+        "doctor__nombre",
+        "doctor__primerApellido",
+        "doctor__segundoApellido",
+    ]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(doctor__usuarioBase=self.request.user)

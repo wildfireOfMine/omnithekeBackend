@@ -101,6 +101,20 @@ class horariosView(APIView):
         serializador = HorarioSerializer(horarios, many=True)
         return Response(serializador.data)
 
+class misHorariosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de mis Horarios",
+        description="Consigue tus propios horarios",
+        request=HorarioSerializer,
+        responses=HorarioSerializer(many=True),
+    )
+    def get(self, request):
+        horarios = Horario.objects.filter(calendario__doctor__usuarioBase=self.request.user).order_by("diaSemana")
+        serializador = HorarioSerializer(horarios, many=True)
+        return Response(serializador.data)
+
 class horasDisponiblesView(APIView):
     permission_classes = [IsAuthenticated]
 
