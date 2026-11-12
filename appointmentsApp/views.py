@@ -14,6 +14,7 @@ from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
 from django.core.mail import send_mail
+from datetime import datetime
 from django.utils.timezone import make_aware, get_current_timezone
 
 # Create your views here.
@@ -70,6 +71,14 @@ class todasCitasPacienteView(generics.ListAPIView):
         "calendario__doctor__primerApellido",
         "calendario__doctor__segundoApellido",
     ]
+
+class conseguirCitaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        cita = Cita.objects.get(pk=pk)
+        serializador = CitaSerializer(cita)
+        return Response(serializador.data, status=status.HTTP_201_CREATED)
 
 class cancelarCitaView(APIView):
     permission_classes = [IsAuthenticated]
@@ -159,8 +168,9 @@ class crearCitaView(APIView):
     def post(self, request):
         print(request.data)
         print(self.request.user.paciente)
-        print(Calendario.objects.get(pk=request.data["doctor"]))
-        request.data["calendario"] = Calendario.objects.get(pk=request.data["doctor"]).pk
+        print(Calendario.objects.get(doctor_id=request.data["doctor"]).pk)
+        
+        request.data["calendario"] = Calendario.objects.get(doctor_id=request.data["doctor"]).pk
         request.data["paciente"] = self.request.user.paciente.id
         request.data.pop("doctor")
         
@@ -182,3 +192,19 @@ class crearCitaView(APIView):
         else:
             print(serializador.errors);
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    summary="GET de tus Citas como Doctor de Hoy",
+    description="Consigue las citas que tienes programadas para hoy",
+    responses=CitaSerializer(many=True),
+)
+class citasDeTuDoctorView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CitaSerializer
+
+
+    def get_queryset(self):
+        usuarioId = self.request.user
+        fechaHoy = timezone.localdate()
+
+        return Cita.objects.filter(fechaInicio__date=fechaHoy, calendario__doctor__usuarioBase=usuarioId)

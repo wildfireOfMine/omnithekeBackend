@@ -89,3 +89,24 @@ class todasConsultasDoctorView(generics.ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(doctor__usuarioBase=self.request.user)
+
+class nuevaConsultaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="POST de una Consulta",
+        description="Añade en la BBDD una Consulta",
+        request=ConsultaSerializer,
+        responses=ConsultaSerializer(many=False),
+    )
+    def post(self, request):
+        print(request)
+        print(request.data)
+        serializador = ConsultaSerializer(data=request.data)
+        print("PASA")
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializador.errors)
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
