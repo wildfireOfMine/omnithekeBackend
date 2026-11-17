@@ -221,6 +221,52 @@ class DoctorSerializer(serializers.ModelSerializer):
 
         return nombres
 
+    def validate_correo(self, correo):
+        validate_email(correo)
+        correo = correo.strip().lower()
+
+        if Usuario.objects.filter(email__iexact=correo).exists():
+            raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
+
+        return correo
+
+    def validate_telefono(self, telefono):
+        if len(telefono) != 9:
+            raise serializers.ValidationError("El número de teléfono no es válido")
+        else:
+            return telefono
+
+    def validate_documentoIdentidad(self, dni):
+        dni = dni.strip().upper()
+
+        if len(dni) != 9 or not dni[:8].isdigit():
+            raise serializers.ValidationError("El DNI/NIF no es válido")
+        else:
+            letras = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+            if letras[int(dni[:8]) % 23] != dni[8]:
+                raise serializers.ValidationError("El DNI/NIF no es válido")
+            else:
+                return dni
+
+    def validate_fechaNacimiento(self, fechaNacimiento):
+        hoy = date.today()
+        fechaMinima = hoy - relativedelta(years=110)
+
+        if fechaNacimiento < fechaMinima:
+            raise serializers.ValidationError("La persona no puede tener más de 110 años")
+        elif fechaNacimiento > hoy:
+            raise serializers.ValidationError("La fecha de nacimiento no puede ser en el futuro")
+        else:
+            return fechaNacimiento
+
+    def validate_password(self, password):
+
+        if len(password) < 8:
+            raise serializers.ValidationError("La contraseña tiene que tener como mínimo 8 carácteres")
+        else:
+            return password
+
 class EspecialidadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Especialidad
@@ -235,6 +281,52 @@ class RecepcionistaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recepcionista
         fields = "__all__"
+
+    def validate_correo(self, correo):
+        validate_email(correo)
+        correo = correo.strip().lower()
+
+        if Usuario.objects.filter(email__iexact=correo).exists():
+            raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
+
+        return correo
+
+    def validate_telefono(self, telefono):
+        if len(telefono) != 9:
+            raise serializers.ValidationError("El número de teléfono no es válido")
+        else:
+            return telefono
+
+    def validate_documentoIdentidad(self, dni):
+        dni = dni.strip().upper()
+
+        if len(dni) != 9 or not dni[:8].isdigit():
+            raise serializers.ValidationError("El DNI/NIF no es válido")
+        else:
+            letras = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+            if letras[int(dni[:8]) % 23] != dni[8]:
+                raise serializers.ValidationError("El DNI/NIF no es válido")
+            else:
+                return dni
+
+    def validate_fechaNacimiento(self, fechaNacimiento):
+        hoy = date.today()
+        fechaMinima = hoy - relativedelta(years=110)
+
+        if fechaNacimiento < fechaMinima:
+            raise serializers.ValidationError("La persona no puede tener más de 110 años")
+        elif fechaNacimiento > hoy:
+            raise serializers.ValidationError("La fecha de nacimiento no puede ser en el futuro")
+        else:
+            return fechaNacimiento
+
+    def validate_password(self, password):
+
+        if len(password) < 8:
+            raise serializers.ValidationError("La contraseña tiene que tener como mínimo 8 carácteres")
+        else:
+            return password
 
 class DocumentoSerializer(serializers.Serializer):
 
