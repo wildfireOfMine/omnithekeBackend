@@ -45,6 +45,7 @@ class registrarseView(APIView):
             serializador.save()
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
+            print(serializador.errors)
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class registrarseDoctorView(APIView):
