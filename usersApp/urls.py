@@ -14,7 +14,11 @@ urlpatterns = [
     path('todosDoctores/', views.todosDoctoresView.as_view()),
     path('especialidades/', views.todasEspecialidadesView.as_view()),
     path('especialidadesList/', views.todasEspecialidadesListView.as_view()),
+    path('especialidadGet/<int:pk>/', views.especialidadGetView.as_view()),
     path('especialidadPost/', views.especialidadPostView.as_view()),
+    path('especialidadPut/<int:pk>/', views.especialidadPutView.as_view()),
+    path('especialidadDelete/<int:pk>/', views.especialidadDeleteView.as_view()),
+
     path('aseguradoras/', views.todasAseguradorasView.as_view()),
     path('aseguradorasList/', views.todasAseguradorasListView.as_view()),
     path('aseguradoraPost/', views.aseguradoraPostView.as_view()),

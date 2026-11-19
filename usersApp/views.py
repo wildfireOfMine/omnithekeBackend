@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, UsuarioSerializer
 from usersApp.models import Usuario
@@ -158,7 +158,21 @@ class todasEspecialidadesListView(generics.ListAPIView):
         "nombre",
     ]
 
-class especialidadPostView(generics.ListAPIView):
+class especialidadGetView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de una Especialidad",
+        description="Consigue una las especialidad de la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer(many=False),
+    )
+    def get(self, request, pk):
+        especialidad = Especialidad.objects.get(pk=pk)
+        serializador = EspecialidadSerializer(especialidad, many=False)
+        return Response(serializador.data)
+
+class especialidadPostView(APIView):
     permission_classes = [IsAuthenticated]
     @extend_schema(
         summary="POST de una Especialidad",
@@ -174,6 +188,38 @@ class especialidadPostView(generics.ListAPIView):
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class especialidadPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de una Especialidad",
+        description="Modifica una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def put(self, request, pk):
+        especialidad = Especialidad.objects.get(pk=pk)
+        serializador = EspecialidadSerializer(especialidad, data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class especialidadDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Especialidad",
+        description="Elimina una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        especialidad = get_object_or_404(Especialidad, pk=pk)
+        especialidad.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class todasAseguradorasView(APIView):
