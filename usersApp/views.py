@@ -72,16 +72,17 @@ class registrarseDoctorView(APIView):
         usuario.last_name = request.data["primerApellido"]
         usuario.set_password(request.data["password"])
         usuario.is_active = True
-        usuario.save()
-
         
+
+        print(usuario)
         request.data["correo"] = usuario.email
         request.data["usuarioBase"] = usuario.pk
         
         
         serializador = DoctorSerializer(data=request.data)
-        
+        print(serializador)
         if serializador.is_valid():
+            usuario.save()
             serializador.save()
             print(serializador.data)
             return Response(serializador.data, status=status.HTTP_201_CREATED)
