@@ -228,8 +228,11 @@ class DoctorSerializer(serializers.ModelSerializer):
         validate_email(correo)
         correo = correo.strip().lower()
 
-        if Usuario.objects.filter(email__iexact=correo).exists():
+        usuariosExistentes = Usuario.objects.filter(email__iexact=correo).exclude(username__startswith="Invitado:")
+
+        if usuariosExistentes.exists():
             raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
+
 
         return correo
 
@@ -289,8 +292,11 @@ class RecepcionistaSerializer(serializers.ModelSerializer):
         validate_email(correo)
         correo = correo.strip().lower()
 
-        if Usuario.objects.filter(email__iexact=correo).exists():
+        usuariosExistentes = Usuario.objects.filter(email__iexact=correo).exclude(username__startswith="Invitado:")
+
+        if usuariosExistentes.exists():
             raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
+
 
         return correo
 
