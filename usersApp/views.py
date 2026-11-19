@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, UsuarioSerializer
 from usersApp.models import Usuario
@@ -75,7 +75,9 @@ class registrarseDoctorView(APIView):
         usuario.save()
 
         
+        request.data["correo"] = usuario.email
         request.data["usuarioBase"] = usuario.pk
+        
         
         serializador = DoctorSerializer(data=request.data)
         
@@ -126,7 +128,7 @@ class todasEspecialidadesView(APIView):
         responses=EspecialidadSerializer(many=True),
     )
     def get(self, request):
-        especialidades = Especialidad.objects.all()
+        especialidades = Especialidad.objects.all().order_by("id")
         serializador = EspecialidadSerializer(especialidades, many=True)
         return Response(serializador.data)
 
@@ -156,7 +158,21 @@ class todasEspecialidadesListView(generics.ListAPIView):
         "nombre",
     ]
 
-class especialidadPostView(generics.ListAPIView):
+class especialidadGetView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de una Especialidad",
+        description="Consigue una las especialidad de la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer(many=False),
+    )
+    def get(self, request, pk):
+        especialidad = Especialidad.objects.get(pk=pk)
+        serializador = EspecialidadSerializer(especialidad, many=False)
+        return Response(serializador.data)
+
+class especialidadPostView(APIView):
     permission_classes = [IsAuthenticated]
     @extend_schema(
         summary="POST de una Especialidad",
@@ -172,6 +188,38 @@ class especialidadPostView(generics.ListAPIView):
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class especialidadPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de una Especialidad",
+        description="Modifica una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def put(self, request, pk):
+        especialidad = Especialidad.objects.get(pk=pk)
+        serializador = EspecialidadSerializer(especialidad, data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class especialidadDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Especialidad",
+        description="Elimina una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        especialidad = get_object_or_404(Especialidad, pk=pk)
+        especialidad.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class todasAseguradorasView(APIView):
@@ -273,8 +321,8 @@ class registrarseRecepcionistaView(APIView):
         usuario.set_password(request.data["password"])
         usuario.is_active = True
         usuario.save()
-
         
+        request.data["correo"] = usuario.email
         request.data["usuarioBase"] = usuario.pk
         
         serializador = RecepcionistaSerializer(data=request.data)
@@ -296,7 +344,7 @@ class todosRecepcionistasListView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
 
-    queryset = Recepcionista.objects.all()
+    queryset = Recepcionista.objects.all().order_by("id")
 
     serializer_class = RecepcionistaSerializer
 
@@ -491,87 +539,92 @@ class invitarUsuarioView(APIView):
         rol = request.data.get("rol")
         print(correo)
         print(rol)
-        try:
-            validate_email(correo)
 
-            usuarioTemporal = f"Invitado: {secrets.token_hex(8)}"
-            contrasenaTemporal = secrets.token_urlsafe(32)
+        if Usuario.objects.filter(email__iexact=correo).exists():
+            print("Repetido")
+            return Response({"mensaje": "Ya existe una cuenta registrada con este correo electrónico"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                validate_email(correo)
 
-            usuario = Usuario.objects.create_user(username=usuarioTemporal, password=contrasenaTemporal, rol=rol, email=correo, is_active=False)
+                usuarioTemporal = f"Invitado: {secrets.token_hex(8)}"
+                contrasenaTemporal = secrets.token_urlsafe(32)
 
-            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
-            token = default_token_generator.make_token(usuario)
+                usuario = Usuario.objects.create_user(username=usuarioTemporal, password=contrasenaTemporal, rol=rol, email=correo, is_active=False)
 
-            enlace = f"{settings.FRONTEND_URL}/{rol}/registrarse/{uid}/{token}"
+                uid = urlsafe_base64_encode(force_bytes(usuario.pk))
+                token = default_token_generator.make_token(usuario)
 
-            send_mail(
-            subject="Confirma tu cuenta - Omnitheke",
-            message=(
-                f"Hola,\n\n"
-                f"Te han invitado para registrarte en Omnitheke como {rol}.\n"
-                "Para registrarte, accede al siguiente enlace:\n\n"
-                f"{enlace}\n\n"
-                "Si crees que se han confundido, ignora este correo."
-            ),
-            from_email=None,
-            recipient_list=[usuario.email],
-            html_message=f"""
-                    <!DOCTYPE html>
-                    <html lang="es">
-                    <body style="
-                        margin: 0;
-                        padding: 30px;
-                        background-color: #f4f6f8;
-                        font-family: Arial, sans-serif;
-                        color: #333333;
-                    ">
-                        <div style="
-                            max-width: 500px;
-                            margin: 0 auto;
-                            padding: 32px;
-                            background-color: #ffffff;
-                            border-radius: 12px;
-                            text-align: center;
+                enlace = f"{settings.FRONTEND_URL}/{rol}/registrarse/{uid}/{token}"
+
+                send_mail(
+                subject="Confirma tu cuenta - Omnitheke",
+                message=(
+                    f"Hola,\n\n"
+                    f"Te han invitado para registrarte en Omnitheke como {rol}.\n"
+                    "Para registrarte, accede al siguiente enlace:\n\n"
+                    f"{enlace}\n\n"
+                    "Si crees que se han confundido, ignora este correo."
+                ),
+                from_email=None,
+                recipient_list=[usuario.email],
+                html_message=f"""
+                        <!DOCTYPE html>
+                        <html lang="es">
+                        <body style="
+                            margin: 0;
+                            padding: 30px;
+                            background-color: #f4f6f8;
+                            font-family: Arial, sans-serif;
+                            color: #333333;
                         ">
-                            <h2 style="color: #1976d2;">
-                                ¡Bienvenido a Omnitheke!
-                            </h2>
+                            <div style="
+                                max-width: 500px;
+                                margin: 0 auto;
+                                padding: 32px;
+                                background-color: #ffffff;
+                                border-radius: 12px;
+                                text-align: center;
+                            ">
+                                <h2 style="color: #1976d2;">
+                                    ¡Bienvenido a Omnitheke!
+                                </h2>
 
-                            <p style="line-height: 1.6;">
-                                Hola,
-                            </p>
+                                <p style="line-height: 1.6;">
+                                    Hola,
+                                </p>
 
-                            <p style="line-height: 1.6;">
-                                Te han invitado para registrarte en Omnitheke como {rol}.
-                            </p>
+                                <p style="line-height: 1.6;">
+                                    Te han invitado para registrarte en Omnitheke como {rol}.
+                                </p>
 
-                            <div style="margin: 30px 0;">
-                                <a href="{enlace}"
-                                style="
-                                    display: inline-block;
-                                    padding: 14px 28px;
-                                    background-color: #1976d2;
-                                    color: #ffffff;
-                                    text-decoration: none;
-                                    font-weight: bold;
-                                    border-radius: 8px;
-                                ">
-                                    Confirmar mi cuenta
-                                </a>
+                                <div style="margin: 30px 0;">
+                                    <a href="{enlace}"
+                                    style="
+                                        display: inline-block;
+                                        padding: 14px 28px;
+                                        background-color: #1976d2;
+                                        color: #ffffff;
+                                        text-decoration: none;
+                                        font-weight: bold;
+                                        border-radius: 8px;
+                                    ">
+                                        Confirmar mi cuenta
+                                    </a>
+                                </div>
+
+                                <p style="font-size: 13px; color: #777777; line-height: 1.5;">
+                                    Si crees que se han confundido, ignora este correo.
+                                </p>
+
+                                <hr style="border: none; border-top: 1px solid #eeeeee;">
+
                             </div>
+                        </body>
+                        </html>
+                        """,
+            )
 
-                            <p style="font-size: 13px; color: #777777; line-height: 1.5;">
-                                Si crees que se han confundido, ignora este correo.
-                            </p>
-
-                            <hr style="border: none; border-top: 1px solid #eeeeee;">
-
-                        </div>
-                    </body>
-                    </html>
-                    """,
-        )
-
-            return Response(status=status.HTTP_200_OK)
-        except ValidationError:
-            return Response({"mensaje": "Algo ha ido mal... ¿Has escrito bien el correo?"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_200_OK)
+            except ValidationError:
+                return Response({"mensaje": "Algo ha ido mal... ¿Has escrito bien el correo?"}, status=status.HTTP_400_BAD_REQUEST)

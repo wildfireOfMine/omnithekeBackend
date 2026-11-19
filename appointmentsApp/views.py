@@ -7,11 +7,12 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from appointmentsApp.serializers import CitaSerializer, HorarioSerializer
+from appointmentsApp.serializers import CitaSerializer, HorarioSerializer, CalendarioSerializer
 from rest_framework import generics
 from rest_framework import permissions, status
 from datetime import datetime, time, timedelta
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
 from django.core.mail import send_mail
 from datetime import datetime
@@ -96,6 +97,46 @@ class cancelarCitaView(APIView):
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class crearCalendarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="POST de tu Calendario como Doctor",
+        description="Crea tu propio Calendario como Doctor",
+    )
+    def post(self, request):
+        usuario = request.user
+        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
+        data = {"doctor":doctor.pk}
+        serializador = CalendarioSerializer(data=data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializador.errors);
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class conseguirCalendarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de tu Calendario como Doctor",
+        description="Consigue tu propio Calendario como Doctor",
+    )
+    def get(self, request):
+        usuario = request.user
+        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
+        calendario = 0
+        try:
+            calendario = doctor.calendario
+        except Calendario.DoesNotExist:
+            calendario = None
+        if calendario:
+            return Response({"mensaje":True})
+        else:
+            return Response({"mensaje":False})
+
+
 class horariosView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -123,6 +164,34 @@ class misHorariosView(APIView):
         horarios = Horario.objects.filter(calendario__doctor__usuarioBase=self.request.user).order_by("diaSemana")
         serializador = HorarioSerializer(horarios, many=True)
         return Response(serializador.data)
+
+class crearHorariosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="POST de Horarios en tu Calendario como Doctor",
+        description="Crea tu propio Horario dentro de tu Calendario como Doctor",
+    )
+    @transaction.atomic
+    def put(self, request):
+        usuario = request.user
+        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
+        calendario = Calendario.objects.get(doctor=doctor)
+
+        data = request.data.copy()
+        for horario in data:
+            horario["calendario"] = calendario.pk
+        print(data)
+        
+        serializador = HorarioSerializer(data=data, many=True, partial=False)
+        
+        if serializador.is_valid():
+            Horario.objects.filter(calendario=calendario).delete()
+            serializador.save()
+            print(serializador.data)
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class horasDisponiblesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -200,6 +269,7 @@ class crearCitaView(APIView):
 )
 class citasDeTuDoctorView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
+    
     serializer_class = CitaSerializer
 
 

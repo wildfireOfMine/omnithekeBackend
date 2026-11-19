@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status
+from appointmentsApp.models import Cita
 from historyApp.serializers import ConsultaSerializer
 from historyApp.models import Consulta
 
@@ -23,7 +24,7 @@ class todasConsultasPacienteView(generics.ListAPIView):
 
     serializer_class = ConsultaSerializer
     
-    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all()
+    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all().order_by("-id")
 
     filter_backends = [
         DjangoFilterBackend,
@@ -69,7 +70,7 @@ class todasConsultasDoctorView(generics.ListAPIView):
 
     serializer_class = ConsultaSerializer
     
-    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all()
+    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all().order_by("-id")
 
     filter_backends = [
         DjangoFilterBackend,
@@ -82,9 +83,9 @@ class todasConsultasDoctorView(generics.ListAPIView):
     ]
 
     search_fields = [
-        "doctor__nombre",
-        "doctor__primerApellido",
-        "doctor__segundoApellido",
+        "paciente__nombre",
+        "paciente__primerApellido",
+        "paciente__segundoApellido",
     ]
 
     def get_queryset(self):
@@ -105,6 +106,9 @@ class nuevaConsultaView(APIView):
         serializador = ConsultaSerializer(data=request.data)
         print("PASA")
         if serializador.is_valid():
+            cita = Cita.objects.get(pk=request.data["cita"])
+            cita.estado = "confirmada"
+            cita.save()
             serializador.save()
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
