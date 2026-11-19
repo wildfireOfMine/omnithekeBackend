@@ -7,9 +7,11 @@ urlpatterns = [
     path('conseguirCita/<int:pk>/', views.conseguirCitaView.as_view()),
     path('misHorarios/', views.misHorariosView.as_view()),
     path('horariosDisponibles/<int:pk>/', views.horariosView.as_view()),
+    path('crearHorarios/', views.crearHorariosView.as_view()),
     path('cancelarCita/<int:pk>/', views.cancelarCitaView.as_view()),
     path('horaDisponible/<int:pk>/<str:fecha>/', views.horasDisponiblesView.as_view()),
     path('nuevaCita/', views.crearCitaView.as_view()),
     path('misCitasDoctorHoy/', views.citasDeTuDoctorView.as_view()),
     path('crearCalendario/', views.crearCalendarioView.as_view()),
+    path('conseguirCalendario/', views.conseguirCalendarioView.as_view()),
 ]
