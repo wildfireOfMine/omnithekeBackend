@@ -11,4 +11,5 @@ urlpatterns = [
     path('horaDisponible/<int:pk>/<str:fecha>/', views.horasDisponiblesView.as_view()),
     path('nuevaCita/', views.crearCitaView.as_view()),
     path('misCitasDoctorHoy/', views.citasDeTuDoctorView.as_view()),
+    path('crearCalendario/', views.crearCalendarioView.as_view()),
 ]

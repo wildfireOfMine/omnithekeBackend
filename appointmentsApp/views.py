@@ -7,7 +7,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from appointmentsApp.serializers import CitaSerializer, HorarioSerializer
+from appointmentsApp.serializers import CitaSerializer, HorarioSerializer, CalendarioSerializer
 from rest_framework import generics
 from rest_framework import permissions, status
 from datetime import datetime, time, timedelta
@@ -95,6 +95,26 @@ class cancelarCitaView(APIView):
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class crearCalendarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="POST de tu Calendario como Doctor",
+        description="Crea tu propio Calendario como Doctor",
+    )
+    def post(self, request):
+        usuario = request.user
+        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
+        data = {"doctor":doctor.pk}
+        serializador = CalendarioSerializer(data=data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializador.errors);
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class horariosView(APIView):
     permission_classes = [IsAuthenticated]
@@ -200,6 +220,7 @@ class crearCitaView(APIView):
 )
 class citasDeTuDoctorView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
+    
     serializer_class = CitaSerializer
 
 

@@ -38,7 +38,7 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         fields = [
             "nombre", "primerApellido", "segundoApellido",
             "sexo", "tipoDocumento", "documentoIdentidad", "pais", "correo", 
-            "telefono", "grupoSanguineo", "aseguradora", "password", "fechaNacimiento"
+            "telefono", "grupoSanguineo", "aseguradoras", "password", "fechaNacimiento"
         ]
 
     @transaction.atomic
@@ -47,7 +47,10 @@ class RegistrarseSerializer(serializers.ModelSerializer):
         documento = validated_data["documentoIdentidad"]
         correo = validated_data["correo"]
         usuario = Usuario.objects.create_user(username=documento, password=password, rol="paciente", email=correo, is_active=False)
+
+        aseguradoras = validated_data.pop("aseguradoras", [])
         paciente = Paciente.objects.create(usuarioBase=usuario, **validated_data)
+        paciente.aseguradoras.set(aseguradoras)
 
         uid = urlsafe_base64_encode(force_bytes(usuario.pk))
         token = default_token_generator.make_token(usuario)

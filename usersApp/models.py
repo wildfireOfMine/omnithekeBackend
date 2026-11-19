@@ -87,7 +87,7 @@ class Paciente(Persona):
         blank=True,
         null=True
     )
-    aseguradora = models.ForeignKey(Aseguradora, on_delete=models.PROTECT, related_name="pacientes", null=True, blank=True)
+    aseguradoras = models.ManyToManyField(Aseguradora, related_name="pacientes", blank=True)
 
     def __str__(self):
             return f"Paciente: {self.primerApellido}, {self.nombre}"

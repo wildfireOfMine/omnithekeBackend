@@ -128,7 +128,7 @@ class todasEspecialidadesView(APIView):
         responses=EspecialidadSerializer(many=True),
     )
     def get(self, request):
-        especialidades = Especialidad.objects.all()
+        especialidades = Especialidad.objects.all().order_by("id")
         serializador = EspecialidadSerializer(especialidades, many=True)
         return Response(serializador.data)
 
@@ -298,7 +298,7 @@ class todosRecepcionistasListView(generics.ListAPIView):
 
     permission_classes = [IsAuthenticated]
 
-    queryset = Recepcionista.objects.all()
+    queryset = Recepcionista.objects.all().order_by("id")
 
     serializer_class = RecepcionistaSerializer
 

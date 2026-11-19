@@ -24,7 +24,7 @@ class todasConsultasPacienteView(generics.ListAPIView):
 
     serializer_class = ConsultaSerializer
     
-    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all()
+    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all().order_by("-id")
 
     filter_backends = [
         DjangoFilterBackend,
@@ -70,7 +70,7 @@ class todasConsultasDoctorView(generics.ListAPIView):
 
     serializer_class = ConsultaSerializer
     
-    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all()
+    queryset = Consulta.objects.select_related("paciente", "doctor", "cita").all().order_by("-id")
 
     filter_backends = [
         DjangoFilterBackend,
