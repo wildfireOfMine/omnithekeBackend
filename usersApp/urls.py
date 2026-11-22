@@ -27,4 +27,5 @@ urlpatterns = [
     path('doctor/<int:pk>/', views.doctorView.as_view()),
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),
+    path('estadisticas/', views.estadisticasView.as_view()),
 ]

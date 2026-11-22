@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, UsuarioSerializer
+from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, EncuestaSerializer
 from usersApp.models import Usuario
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -21,6 +21,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from datetime import datetime
+from appointmentsApp.models import Cita
+from historyApp.models import Consulta
 import secrets
 
 
@@ -630,3 +633,35 @@ class invitarUsuarioView(APIView):
                 return Response(status=status.HTTP_200_OK)
             except ValidationError:
                 return Response({"mensaje": "Algo ha ido mal... ¿Has escrito bien el correo?"}, status=status.HTTP_400_BAD_REQUEST)
+
+class estadisticasView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        summary="GET de las Estadísticas",
+        description="Consigue las estadísticas del consultorio",
+        request=EncuestaSerializer,
+        responses=EncuestaSerializer,
+    )
+    def get(self, request):
+        fechaHoy = datetime.today()
+   
+        usuariosRegistrados = Usuario.objects.filter(date_joined__month=fechaHoy.month, date_joined__year=fechaHoy.year).count()
+        doctoresRegistrados = Usuario.objects.filter(date_joined__month=fechaHoy.month, date_joined__year=fechaHoy.year, rol="doctor").count()
+        citasMensuales = Cita.objects.filter(horaCreacion__year=fechaHoy.year, horaCreacion__month=fechaHoy.month).count()
+        citasPendientes = Cita.objects.filter(horaCreacion__year=fechaHoy.year, horaCreacion__month=fechaHoy.month, estado="pendiente").count()
+        consultasRealizadas = Consulta.objects.filter(fechaRegistro__year=fechaHoy.year, fechaRegistro__month=fechaHoy.month).count()
+        citasCanceladas = Cita.objects.filter(horaCreacion__year=fechaHoy.year, horaCreacion__month=fechaHoy.month, estado="cancelada").count()
+
+        data = {
+            "usuariosRegistrados":usuariosRegistrados, 
+            "doctoresRegistrados":doctoresRegistrados, 
+            "citasMensuales":citasMensuales, 
+            "citasPendientes":citasPendientes, 
+            "consultasRealizadas":consultasRealizadas, 
+            "citasCanceladas":citasCanceladas
+        }
+        serializador = EncuestaSerializer(data)
+
+        return Response(serializador.data)
+        

@@ -368,3 +368,11 @@ class UsuarioSerializer(serializers.Serializer):
     class Meta:
             model = Usuario
             fields = "__all__"
+
+class EncuestaSerializer(serializers.Serializer):
+    usuariosRegistrados = serializers.IntegerField()
+    doctoresRegistrados = serializers.IntegerField()
+    citasMensuales = serializers.IntegerField()
+    citasPendientes = serializers.IntegerField() 
+    consultasRealizadas = serializers.IntegerField()
+    citasCanceladas = serializers.IntegerField()
