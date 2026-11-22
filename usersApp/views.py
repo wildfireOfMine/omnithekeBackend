@@ -123,6 +123,59 @@ class todosDoctoresView(generics.ListAPIView):
         "segundoApellido",
     ]
 
+class doctorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de un Doctor",
+        description="Consigue la información de un Doctor",
+        request=DoctorSerializer,
+        responses=DoctorSerializer(many=False),
+    )
+    def get(self, request, pk):
+        doctor = Doctor.objects.get(pk=pk)
+        serializador = DoctorSerializer(doctor, many=False)
+        return Response(serializador.data)
+
+class doctorPutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="PUT de un Doctor",
+        description="Modifica un doctor en la BBDD",
+        request=DoctorSerializer,
+        responses=DoctorSerializer,
+    )
+    def put(self, request, pk):
+        doctor = Doctor.objects.get(pk=pk)
+        datos = request.data.copy()
+        print(datos)
+        print(doctor.usuarioBase.id)
+        datos["usuarioBase"] = doctor.usuarioBase.id
+        datos["correo"] = doctor.usuarioBase.email
+        print(datos)
+        serializador = DoctorSerializer(doctor, data=datos)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class doctorDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Especialidad",
+        description="Elimina una especialidad en la BBDD",
+        request=DoctorSerializer,
+        responses=DoctorSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        doctor = get_object_or_404(Doctor, pk=pk)
+        doctor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class todasEspecialidadesView(APIView):
     permission_classes = [AllowAny]
 
@@ -332,20 +385,6 @@ class aseguradoraDeleteView(APIView):
         aseguradora.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class doctorView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="GET de un Doctor",
-        description="Consigue la información de un Doctor",
-        request=DoctorSerializer,
-        responses=DoctorSerializer(many=False),
-    )
-    def get(self, request, pk):
-        doctor = Doctor.objects.get(pk=pk)
-        serializador = DoctorSerializer(doctor, many=False)
-        return Response(serializador.data)
-
 class registrarseRecepcionistaView(APIView):
     permission_classes = [AllowAny]
 
@@ -413,6 +452,58 @@ class todosRecepcionistasListView(generics.ListAPIView):
         "primerApellido",
         "segundoApellido",
     ]
+
+class recepcionistaGetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de un Recepcionista",
+        description="Consigue un recepcionista de la BBDD",
+        request=RecepcionistaSerializer,
+        responses=RecepcionistaSerializer(many=False),
+    )
+    def get(self, request, pk):
+        recepcionista = Recepcionista.objects.get(pk=pk)
+        serializador = RecepcionistaSerializer(recepcionista, many=False)
+        return Response(serializador.data)
+
+class recepcionistaPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de un Recepcionista",
+        description="Modifica un recepcionista en la BBDD",
+        request=RecepcionistaSerializer,
+        responses=RecepcionistaSerializer,
+    )
+    def put(self, request, pk):
+        recepcionista = Recepcionista.objects.get(pk=pk)
+        datos = request.data.copy()
+        print(datos)
+        print(recepcionista.usuarioBase.id)
+        datos["usuarioBase"] = recepcionista.usuarioBase.id
+        datos["correo"] = recepcionista.usuarioBase.email
+        serializador = RecepcionistaSerializer(recepcionista, data=datos)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class recepcionistaDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        summary="DELETE de un Recepcionista",
+        description="Elimina un recepcionista en la BBDD",
+        request=RecepcionistaSerializer,
+        responses=RecepcionistaSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        recepcionista = get_object_or_404(Recepcionista, pk=pk)
+        recepcionista.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class confirmarCuentaView(APIView):

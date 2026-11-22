@@ -6,12 +6,17 @@ from usersApp import views
 urlpatterns = [
     path('login/', views.ObtenerToken.as_view()),
     path('registrarse/', views.registrarseView.as_view()),
-    path('registrarseDoctor/', views.registrarseDoctorView.as_view()),
     path('confirmarCuenta/', views.confirmarCuentaView.as_view()),
     path('solicitarRecuperacion/', views.solicitarRecuperacionView.as_view()),
     path('restablecerContrasena/', views.restablecerContrasenaView.as_view()),
 
     path('todosDoctores/', views.todosDoctoresView.as_view()),
+    path('registrarseDoctor/', views.registrarseDoctorView.as_view()),
+    path('doctor/<int:pk>/', views.doctorView.as_view()),
+    path('doctorPut/<int:pk>/', views.doctorPutView.as_view()),
+    path('doctorDelete/<int:pk>/', views.doctorDeleteView.as_view()),
+
+
     path('especialidades/', views.todasEspecialidadesView.as_view()),
     path('especialidadesList/', views.todasEspecialidadesListView.as_view()),
     path('especialidadGet/<int:pk>/', views.especialidadGetView.as_view()),
@@ -28,7 +33,10 @@ urlpatterns = [
 
     path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
     path('registrarseRecepcionista/', views.registrarseRecepcionistaView.as_view()),
-    path('doctor/<int:pk>/', views.doctorView.as_view()),
+    path('recepcionistaGet/<int:pk>/', views.doctorView.as_view()),
+    path('recepcionistaPut/<int:pk>/', views.doctorPutView.as_view()),
+    path('recepcionistaDelete/<int:pk>/', views.doctorDeleteView.as_view()),
+    
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),
     path('estadisticas/', views.estadisticasView.as_view()),
