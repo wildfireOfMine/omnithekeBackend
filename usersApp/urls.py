@@ -21,7 +21,11 @@ urlpatterns = [
 
     path('aseguradoras/', views.todasAseguradorasView.as_view()),
     path('aseguradorasList/', views.todasAseguradorasListView.as_view()),
+    path('aseguradoraGet/<int:pk>/', views.aseguradoraGetView.as_view()),
     path('aseguradoraPost/', views.aseguradoraPostView.as_view()),
+    path('aseguradoraPut/<int:pk>/', views.aseguradoraPutView.as_view()),
+    path('aseguradoraDelete/<int:pk>/', views.aseguradoraDeleteView.as_view()),
+
     path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
     path('registrarseRecepcionista/', views.registrarseRecepcionistaView.as_view()),
     path('doctor/<int:pk>/', views.doctorView.as_view()),

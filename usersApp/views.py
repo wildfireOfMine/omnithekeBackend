@@ -267,6 +267,20 @@ class todasAseguradorasListView(generics.ListAPIView):
         "nombre",
     ]
 
+class aseguradoraGetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de una Aseguradora",
+        description="Consigue una las especialidad de la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer(many=False),
+    )
+    def get(self, request, pk):
+        aseguradora = Aseguradora.objects.get(pk=pk)
+        serializador = AseguradoraSerializer(aseguradora, many=False)
+        return Response(serializador.data)
+
 class aseguradoraPostView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     @extend_schema(
@@ -285,6 +299,38 @@ class aseguradoraPostView(generics.ListAPIView):
         else:
             print(serializador.errors)
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class aseguradoraPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de una Aseguradora",
+        description="Modifica una aseguradora en la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer,
+    )
+    def put(self, request, pk):
+        aseguradora = Aseguradora.objects.get(pk=pk)
+        serializador = AseguradoraSerializer(aseguradora, data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class aseguradoraDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Aseguradora",
+        description="Elimina una aseguradora en la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        aseguradora = get_object_or_404(Aseguradora, pk=pk)
+        aseguradora.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class doctorView(APIView):
     permission_classes = [IsAuthenticated]
