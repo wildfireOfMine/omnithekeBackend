@@ -33,9 +33,9 @@ urlpatterns = [
 
     path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
     path('registrarseRecepcionista/', views.registrarseRecepcionistaView.as_view()),
-    path('recepcionistaGet/<int:pk>/', views.doctorView.as_view()),
-    path('recepcionistaPut/<int:pk>/', views.doctorPutView.as_view()),
-    path('recepcionistaDelete/<int:pk>/', views.doctorDeleteView.as_view()),
+    path('recepcionistaGet/<int:pk>/', views.recepcionistaGetView.as_view()),
+    path('recepcionistaPut/<int:pk>/', views.recepcionistaPutView.as_view()),
+    path('recepcionistaDelete/<int:pk>/', views.recepcionistaDeleteView.as_view()),
     
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),
