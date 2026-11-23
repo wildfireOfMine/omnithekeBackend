@@ -608,7 +608,7 @@ class registrarseRecepcionistaView(APIView):
         usuario.last_name = request.data["primerApellido"]
         usuario.set_password(request.data["password"])
         usuario.is_active = True
-        usuario.save()
+        
         
         request.data["correo"] = usuario.email
         request.data["usuarioBase"] = usuario.pk
@@ -616,6 +616,7 @@ class registrarseRecepcionistaView(APIView):
         serializador = RecepcionistaSerializer(data=request.data)
         
         if serializador.is_valid():
+            usuario.save()
             serializador.save()
             print(serializador.data)
             return Response(serializador.data, status=status.HTTP_201_CREATED)
