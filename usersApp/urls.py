@@ -16,7 +16,6 @@ urlpatterns = [
     path('doctorPut/<int:pk>/', views.doctorPutView.as_view()),
     path('doctorDelete/<int:pk>/', views.doctorDeleteView.as_view()),
 
-
     path('especialidades/', views.todasEspecialidadesView.as_view()),
     path('especialidadesList/', views.todasEspecialidadesListView.as_view()),
     path('especialidadGet/<int:pk>/', views.especialidadGetView.as_view()),
@@ -36,7 +35,6 @@ urlpatterns = [
     path('recepcionistaGet/<int:pk>/', views.recepcionistaGetView.as_view()),
     path('recepcionistaPut/<int:pk>/', views.recepcionistaPutView.as_view()),
     path('recepcionistaDelete/<int:pk>/', views.recepcionistaDeleteView.as_view()),
-    
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),
     path('estadisticas/', views.estadisticasView.as_view()),

@@ -20,6 +20,46 @@ from django.utils.timezone import make_aware, get_current_timezone
 
 # Create your views here.
 
+class crearCalendarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="POST de tu Calendario como Doctor",
+        description="Crea tu propio Calendario como Doctor",
+    )
+    def post(self, request):
+        usuario = request.user
+        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
+        data = {"doctor":doctor.pk}
+        serializador = CalendarioSerializer(data=data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializador.errors);
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class conseguirCalendarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de tu Calendario como Doctor",
+        description="Consigue tu propio Calendario como Doctor",
+    )
+    def get(self, request):
+        usuario = request.user
+        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
+        calendario = 0
+        try:
+            calendario = doctor.calendario
+        except Calendario.DoesNotExist:
+            calendario = None
+        if calendario:
+            return Response({"mensaje":True})
+        else:
+            return Response({"mensaje":False})
+
+
 @extend_schema(
         summary="GET de Citas de un Paciente",
         description="GET de todas las Citas de un Paciente",
@@ -97,44 +137,74 @@ class cancelarCitaView(APIView):
         else:
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class crearCalendarioView(APIView):
+class crearCitaView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        summary="POST de tu Calendario como Doctor",
-        description="Crea tu propio Calendario como Doctor",
+        summary="POST de una cita",
+        description="Crea una cita en la BD",
+        request=CitaSerializer,
+        responses=CitaSerializer(many=True),
     )
     def post(self, request):
-        usuario = request.user
-        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
-        data = {"doctor":doctor.pk}
-        serializador = CalendarioSerializer(data=data)
+        print(request.data)
+        print(self.request.user.paciente)
+        print(Calendario.objects.get(doctor_id=request.data["doctor"]).pk)
+        
+        request.data["calendario"] = Calendario.objects.get(doctor_id=request.data["doctor"]).pk
+        request.data["paciente"] = self.request.user.paciente.id
+        request.data.pop("doctor")
+        
+        serializador = CitaSerializer(data=request.data)
         if serializador.is_valid():
-            serializador.save()
+            cita = serializador.save()
+            send_mail(
+                subject="Nueva cita médica - Omnitheke",
+                message=f"""
+            Hola, {cita.paciente.nombre}.
+            Tiene una nueva cita médica en Omnitheke con el doctor {cita.calendario.doctor.nombre}, el día {cita.fechaInicio.strftime("%d/%m/%Y")} a las {cita.fechaInicio.strftime("%H:%M")} por un caso de \"{cita.motivo}\".
+
+            Gracias por utilizar Omnitheke.
+            """,
+                from_email=None,
+                recipient_list=[cita.paciente.correo],
+            )
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:
             print(serializador.errors);
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class conseguirCalendarioView(APIView):
+@extend_schema(
+    summary="GET de tus Citas como Doctor de Hoy",
+    description="Consigue las citas que tienes programadas para hoy",
+    responses=CitaSerializer(many=True),
+)
+class citasDeTuDoctorView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    serializer_class = CitaSerializer
+
+
+    def get_queryset(self):
+        usuarioId = self.request.user
+        fechaHoy = timezone.localdate()
+
+        return Cita.objects.filter(fechaInicio__date=fechaHoy, calendario__doctor__usuarioBase=usuarioId)
+
+
+class misHorariosView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        summary="GET de tu Calendario como Doctor",
-        description="Consigue tu propio Calendario como Doctor",
+        summary="GET de mis Horarios",
+        description="Consigue tus propios horarios",
+        request=HorarioSerializer,
+        responses=HorarioSerializer(many=True),
     )
     def get(self, request):
-        usuario = request.user
-        doctor = Doctor.objects.get(usuarioBase_id=usuario.pk)
-        calendario = 0
-        try:
-            calendario = doctor.calendario
-        except Calendario.DoesNotExist:
-            calendario = None
-        if calendario:
-            return Response({"mensaje":True})
-        else:
-            return Response({"mensaje":False})
+        horarios = Horario.objects.filter(calendario__doctor__usuarioBase=self.request.user).order_by("diaSemana")
+        serializador = HorarioSerializer(horarios, many=True)
+        return Response(serializador.data)
 
 
 class horariosView(APIView):
@@ -148,20 +218,6 @@ class horariosView(APIView):
     )
     def get(self, request, pk):
         horarios = Horario.objects.filter(calendario__doctor=pk)
-        serializador = HorarioSerializer(horarios, many=True)
-        return Response(serializador.data)
-
-class misHorariosView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="GET de mis Horarios",
-        description="Consigue tus propios horarios",
-        request=HorarioSerializer,
-        responses=HorarioSerializer(many=True),
-    )
-    def get(self, request):
-        horarios = Horario.objects.filter(calendario__doctor__usuarioBase=self.request.user).order_by("diaSemana")
         serializador = HorarioSerializer(horarios, many=True)
         return Response(serializador.data)
 
@@ -225,56 +281,3 @@ class horasDisponiblesView(APIView):
 
             return Response(horasDisponibles)
     
-class crearCitaView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="POST de una cita",
-        description="Crea una cita en la BD",
-        request=CitaSerializer,
-        responses=CitaSerializer(many=True),
-    )
-    def post(self, request):
-        print(request.data)
-        print(self.request.user.paciente)
-        print(Calendario.objects.get(doctor_id=request.data["doctor"]).pk)
-        
-        request.data["calendario"] = Calendario.objects.get(doctor_id=request.data["doctor"]).pk
-        request.data["paciente"] = self.request.user.paciente.id
-        request.data.pop("doctor")
-        
-        serializador = CitaSerializer(data=request.data)
-        if serializador.is_valid():
-            cita = serializador.save()
-            send_mail(
-                subject="Nueva cita médica - Omnitheke",
-                message=f"""
-            Hola, {cita.paciente.nombre}.
-            Tiene una nueva cita médica en Omnitheke con el doctor {cita.calendario.doctor.nombre}, el día {cita.fechaInicio.strftime("%d/%m/%Y")} a las {cita.fechaInicio.strftime("%H:%M")} por un caso de \"{cita.motivo}\".
-
-            Gracias por utilizar Omnitheke.
-            """,
-                from_email=None,
-                recipient_list=[cita.paciente.correo],
-            )
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            print(serializador.errors);
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    summary="GET de tus Citas como Doctor de Hoy",
-    description="Consigue las citas que tienes programadas para hoy",
-    responses=CitaSerializer(many=True),
-)
-class citasDeTuDoctorView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    
-    serializer_class = CitaSerializer
-
-
-    def get_queryset(self):
-        usuarioId = self.request.user
-        fechaHoy = timezone.localdate()
-
-        return Cita.objects.filter(fechaInicio__date=fechaHoy, calendario__doctor__usuarioBase=usuarioId)

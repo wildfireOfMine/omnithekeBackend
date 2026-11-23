@@ -51,461 +51,6 @@ class registrarseView(APIView):
             print(serializador.errors)
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class registrarseDoctorView(APIView):
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        summary="POST de un Doctor",
-        description="Registra un usuario y un doctor en la BBDD",
-    )
-    @transaction.atomic
-    def post(self, request):
-        print(request.data)
-        uid = request.data.get("uid")
-        token = request.data.get("token")
-        print(uid)
-        print(token)
-        try:
-            usuarioId = urlsafe_base64_decode(uid).decode()
-            usuario = Usuario.objects.get(pk=usuarioId)
-            print(usuario.__dict__)
-        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
-            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
-        usuario.username = request.data["documentoIdentidad"]
-        usuario.first_name = request.data["nombre"]
-        usuario.last_name = request.data["primerApellido"]
-        usuario.set_password(request.data["password"])
-        usuario.is_active = True
-        
-
-        print(usuario)
-        request.data["correo"] = usuario.email
-        request.data["usuarioBase"] = usuario.pk
-        
-        
-        serializador = DoctorSerializer(data=request.data)
-        print(serializador)
-        if serializador.is_valid():
-            usuario.save()
-            serializador.save()
-            print(serializador.data)
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-        summary="GET de Doctores",
-        description="GET de todos los Doctores en la BBDD",
-        responses=DoctorSerializer(many=True),
-)
-class todosDoctoresView(generics.ListAPIView):
-
-    permission_classes = [AllowAny]
-    
-
-    queryset = Doctor.objects.select_related("especialidad").all().order_by("id")
-
-    serializer_class = DoctorSerializer
-
-    filter_backends = [
-        DjangoFilterBackend,
-        SearchFilter,
-    ]
-
-    filterset_fields = [
-        "especialidad",
-        "aseguradoras",
-    ]
-
-    search_fields = [
-        "nombre",
-        "primerApellido",
-        "segundoApellido",
-    ]
-
-class doctorView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="GET de un Doctor",
-        description="Consigue la información de un Doctor",
-        request=DoctorSerializer,
-        responses=DoctorSerializer(many=False),
-    )
-    def get(self, request, pk):
-        doctor = Doctor.objects.get(pk=pk)
-        serializador = DoctorSerializer(doctor, many=False)
-        return Response(serializador.data)
-
-class doctorPutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="PUT de un Doctor",
-        description="Modifica un doctor en la BBDD",
-        request=DoctorSerializer,
-        responses=DoctorSerializer,
-    )
-    def put(self, request, pk):
-        doctor = Doctor.objects.get(pk=pk)
-        datos = request.data.copy()
-        print(datos)
-        print(doctor.usuarioBase.id)
-        datos["usuarioBase"] = doctor.usuarioBase.id
-        datos["correo"] = doctor.usuarioBase.email
-        print(datos)
-        serializador = DoctorSerializer(doctor, data=datos)
-        if serializador.is_valid():
-            serializador.save()
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class doctorDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="DELETE de una Especialidad",
-        description="Elimina una especialidad en la BBDD",
-        request=DoctorSerializer,
-        responses=DoctorSerializer,
-    )
-    def delete(self, request, pk):
-        print(pk)
-        print(request.data)
-        doctor = get_object_or_404(Doctor, pk=pk)
-        doctor.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-class todasEspecialidadesView(APIView):
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        summary="GET de todas las Especialidades",
-        description="Consigue todas las especialidades de la BBDD",
-        request=EspecialidadSerializer,
-        responses=EspecialidadSerializer(many=True),
-    )
-    def get(self, request):
-        especialidades = Especialidad.objects.all().order_by("id")
-        serializador = EspecialidadSerializer(especialidades, many=True)
-        return Response(serializador.data)
-
-@extend_schema(
-        summary="GET de Especialidades filtradas",
-        description="GET de todas las Especialidades filtradas en la BBDD",
-        responses=EspecialidadSerializer(many=True),
-)
-class todasEspecialidadesListView(generics.ListAPIView):
-
-    permission_classes = [IsAuthenticated]
-
-    queryset = Especialidad.objects.all().order_by("id")
-
-    serializer_class = EspecialidadSerializer
-
-    filter_backends = [
-        DjangoFilterBackend,
-        SearchFilter,
-    ]
-
-    filterset_fields = [
-        "nombre",
-    ]
-
-    search_fields = [
-        "nombre",
-    ]
-
-class especialidadGetView(APIView):
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        summary="GET de una Especialidad",
-        description="Consigue una las especialidad de la BBDD",
-        request=EspecialidadSerializer,
-        responses=EspecialidadSerializer(many=False),
-    )
-    def get(self, request, pk):
-        especialidad = Especialidad.objects.get(pk=pk)
-        serializador = EspecialidadSerializer(especialidad, many=False)
-        return Response(serializador.data)
-
-class especialidadPostView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="POST de una Especialidad",
-        description="Añade una especialidad en la BBDD",
-        request=EspecialidadSerializer,
-        responses=EspecialidadSerializer,
-    )
-    def post(self, request):
-        print(request.data)
-        serializador = EspecialidadSerializer(data=request.data)
-        if serializador.is_valid():
-            serializador.save()
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class especialidadPutView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="PUT de una Especialidad",
-        description="Modifica una especialidad en la BBDD",
-        request=EspecialidadSerializer,
-        responses=EspecialidadSerializer,
-    )
-    def put(self, request, pk):
-        especialidad = Especialidad.objects.get(pk=pk)
-        serializador = EspecialidadSerializer(especialidad, data=request.data)
-        if serializador.is_valid():
-            serializador.save()
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class especialidadDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="DELETE de una Especialidad",
-        description="Elimina una especialidad en la BBDD",
-        request=EspecialidadSerializer,
-        responses=EspecialidadSerializer,
-    )
-    def delete(self, request, pk):
-        print(pk)
-        print(request.data)
-        especialidad = get_object_or_404(Especialidad, pk=pk)
-        especialidad.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class todasAseguradorasView(APIView):
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        summary="GET de todas las Aseguradoras",
-        description="Consigue todas las aseguradoras de la BBDD",
-        request=AseguradoraSerializer,
-        responses=AseguradoraSerializer(many=True),
-    )
-    def get(self, request):
-        aseguradoras = Aseguradora.objects.all()
-        serializador = AseguradoraSerializer(aseguradoras, many=True)
-        return Response(serializador.data)
-
-@extend_schema(
-        summary="GET de Aseguradoras filtradas",
-        description="GET de todas las Aseguradoras filtradas en la BBDD",
-        responses=AseguradoraSerializer(many=True),
-)
-class todasAseguradorasListView(generics.ListAPIView):
-
-    permission_classes = [IsAuthenticated]
-
-    queryset = Aseguradora.objects.all().order_by("id")
-
-    serializer_class = AseguradoraSerializer
-
-    filter_backends = [
-        DjangoFilterBackend,
-        SearchFilter,
-    ]
-
-    filterset_fields = [
-        "nombre",
-    ]
-
-    search_fields = [
-        "nombre",
-    ]
-
-class aseguradoraGetView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="GET de una Aseguradora",
-        description="Consigue una las especialidad de la BBDD",
-        request=AseguradoraSerializer,
-        responses=AseguradoraSerializer(many=False),
-    )
-    def get(self, request, pk):
-        aseguradora = Aseguradora.objects.get(pk=pk)
-        serializador = AseguradoraSerializer(aseguradora, many=False)
-        return Response(serializador.data)
-
-class aseguradoraPostView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="POST de una Aseguradora",
-        description="Añade una aseguradora en la BBDD",
-        request=AseguradoraSerializer,
-        responses=AseguradoraSerializer,
-    )
-    def post(self, request):
-        print(request.data)
-        serializador = AseguradoraSerializer(data=request.data)
-        print("PASA")
-        if serializador.is_valid():
-            serializador.save()
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            print(serializador.errors)
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class aseguradoraPutView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="PUT de una Aseguradora",
-        description="Modifica una aseguradora en la BBDD",
-        request=AseguradoraSerializer,
-        responses=AseguradoraSerializer,
-    )
-    def put(self, request, pk):
-        aseguradora = Aseguradora.objects.get(pk=pk)
-        serializador = AseguradoraSerializer(aseguradora, data=request.data)
-        if serializador.is_valid():
-            serializador.save()
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class aseguradoraDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="DELETE de una Aseguradora",
-        description="Elimina una aseguradora en la BBDD",
-        request=AseguradoraSerializer,
-        responses=AseguradoraSerializer,
-    )
-    def delete(self, request, pk):
-        print(pk)
-        print(request.data)
-        aseguradora = get_object_or_404(Aseguradora, pk=pk)
-        aseguradora.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-class registrarseRecepcionistaView(APIView):
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        summary="POST de un Recepcionista",
-        description="Registra un usuario y un recepcionista en la BBDD",
-    )
-    @transaction.atomic
-    def post(self, request):
-        print(request.data)
-        uid = request.data.get("uid")
-        token = request.data.get("token")
-        print(uid)
-        print(token)
-        try:
-            usuarioId = urlsafe_base64_decode(uid).decode()
-            usuario = Usuario.objects.get(pk=usuarioId)
-            print(usuario.__dict__)
-        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
-            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
-        usuario.username = request.data["documentoIdentidad"]
-        usuario.first_name = request.data["nombre"]
-        usuario.last_name = request.data["primerApellido"]
-        usuario.set_password(request.data["password"])
-        usuario.is_active = True
-        usuario.save()
-        
-        request.data["correo"] = usuario.email
-        request.data["usuarioBase"] = usuario.pk
-        
-        serializador = RecepcionistaSerializer(data=request.data)
-        
-        if serializador.is_valid():
-            serializador.save()
-            print(serializador.data)
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@extend_schema(
-        summary="GET de Recepcionistas filtrados",
-        description="GET de todas los Recepcionistas filtradas en la BBDD",
-        responses=RecepcionistaSerializer(many=True),
-)
-class todosRecepcionistasListView(generics.ListAPIView):
-
-    permission_classes = [IsAuthenticated]
-
-    queryset = Recepcionista.objects.all().order_by("id")
-
-    serializer_class = RecepcionistaSerializer
-
-    filter_backends = [
-        DjangoFilterBackend,
-        SearchFilter,
-    ]
-
-    filterset_fields = [
-        "nombre",
-    ]
-
-    search_fields = [
-        "nombre",
-        "primerApellido",
-        "segundoApellido",
-    ]
-
-class recepcionistaGetView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        summary="GET de un Recepcionista",
-        description="Consigue un recepcionista de la BBDD",
-        request=RecepcionistaSerializer,
-        responses=RecepcionistaSerializer(many=False),
-    )
-    def get(self, request, pk):
-        recepcionista = Recepcionista.objects.get(pk=pk)
-        serializador = RecepcionistaSerializer(recepcionista, many=False)
-        return Response(serializador.data)
-
-class recepcionistaPutView(APIView):
-    permission_classes = [IsAuthenticated]
-    @extend_schema(
-        summary="PUT de un Recepcionista",
-        description="Modifica un recepcionista en la BBDD",
-        request=RecepcionistaSerializer,
-        responses=RecepcionistaSerializer,
-    )
-    def put(self, request, pk):
-        recepcionista = Recepcionista.objects.get(pk=pk)
-        datos = request.data.copy()
-        print(datos)
-        print(recepcionista.usuarioBase.id)
-        datos["usuarioBase"] = recepcionista.usuarioBase.id
-        datos["correo"] = recepcionista.usuarioBase.email
-        serializador = RecepcionistaSerializer(recepcionista, data=datos)
-        if serializador.is_valid():
-            serializador.save()
-            return Response(serializador.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class recepcionistaDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-    
-    @extend_schema(
-        summary="DELETE de un Recepcionista",
-        description="Elimina un recepcionista en la BBDD",
-        request=RecepcionistaSerializer,
-        responses=RecepcionistaSerializer,
-    )
-    def delete(self, request, pk):
-        print(pk)
-        print(request.data)
-        recepcionista = get_object_or_404(Recepcionista, pk=pk)
-        recepcionista.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 class confirmarCuentaView(APIView):
     permission_classes = [AllowAny]
 
@@ -538,7 +83,6 @@ class confirmarCuentaView(APIView):
         return Response({
             "mensaje": "Cuenta confirmada correctamente, ya puedes iniciar sesión"
         })
-
 
 class solicitarRecuperacionView(APIView):
     permission_classes = [AllowAny]
@@ -667,6 +211,470 @@ class restablecerContrasenaView(APIView):
         usuario.save()
 
         return Response({"mensaje": "Contraseña restablecida correctamente."}, status=status.HTTP_200_OK)
+
+
+
+@extend_schema(
+        summary="GET de Doctores",
+        description="GET de todos los Doctores en la BBDD",
+        responses=DoctorSerializer(many=True),
+)
+class todosDoctoresView(generics.ListAPIView):
+
+    permission_classes = [AllowAny]
+    
+
+    queryset = Doctor.objects.select_related("especialidad").all().order_by("id")
+
+    serializer_class = DoctorSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "especialidad",
+        "aseguradoras",
+    ]
+
+    search_fields = [
+        "nombre",
+        "primerApellido",
+        "segundoApellido",
+    ]
+
+class registrarseDoctorView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="POST de un Doctor",
+        description="Registra un usuario y un doctor en la BBDD",
+    )
+    @transaction.atomic
+    def post(self, request):
+        print(request.data)
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        print(uid)
+        print(token)
+        try:
+            usuarioId = urlsafe_base64_decode(uid).decode()
+            usuario = Usuario.objects.get(pk=usuarioId)
+            print(usuario.__dict__)
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
+        usuario.username = request.data["documentoIdentidad"]
+        usuario.first_name = request.data["nombre"]
+        usuario.last_name = request.data["primerApellido"]
+        usuario.set_password(request.data["password"])
+        usuario.is_active = True
+        
+
+        print(usuario)
+        request.data["correo"] = usuario.email
+        request.data["usuarioBase"] = usuario.pk
+        
+        
+        serializador = DoctorSerializer(data=request.data)
+        print(serializador)
+        if serializador.is_valid():
+            usuario.save()
+            serializador.save()
+            print(serializador.data)
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class doctorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de un Doctor",
+        description="Consigue la información de un Doctor",
+        request=DoctorSerializer,
+        responses=DoctorSerializer(many=False),
+    )
+    def get(self, request, pk):
+        doctor = Doctor.objects.get(pk=pk)
+        serializador = DoctorSerializer(doctor, many=False)
+        return Response(serializador.data)
+
+class doctorPutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="PUT de un Doctor",
+        description="Modifica un doctor en la BBDD",
+        request=DoctorSerializer,
+        responses=DoctorSerializer,
+    )
+    def put(self, request, pk):
+        doctor = Doctor.objects.get(pk=pk)
+        datos = request.data.copy()
+        print(datos)
+        print(doctor.usuarioBase.id)
+        datos["usuarioBase"] = doctor.usuarioBase.id
+        datos["correo"] = doctor.usuarioBase.email
+        print(datos)
+        serializador = DoctorSerializer(doctor, data=datos)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class doctorDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Especialidad",
+        description="Elimina una especialidad en la BBDD",
+        request=DoctorSerializer,
+        responses=DoctorSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        doctor = get_object_or_404(Doctor, pk=pk)
+        doctor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class todasEspecialidadesView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de todas las Especialidades",
+        description="Consigue todas las especialidades de la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer(many=True),
+    )
+    def get(self, request):
+        especialidades = Especialidad.objects.all().order_by("id")
+        serializador = EspecialidadSerializer(especialidades, many=True)
+        return Response(serializador.data)
+
+@extend_schema(
+        summary="GET de Especialidades filtradas",
+        description="GET de todas las Especialidades filtradas en la BBDD",
+        responses=EspecialidadSerializer(many=True),
+)
+class todasEspecialidadesListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    queryset = Especialidad.objects.all().order_by("id")
+
+    serializer_class = EspecialidadSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "nombre",
+    ]
+
+    search_fields = [
+        "nombre",
+    ]
+
+class especialidadGetView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de una Especialidad",
+        description="Consigue una las especialidad de la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer(many=False),
+    )
+    def get(self, request, pk):
+        especialidad = Especialidad.objects.get(pk=pk)
+        serializador = EspecialidadSerializer(especialidad, many=False)
+        return Response(serializador.data)
+
+class especialidadPostView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="POST de una Especialidad",
+        description="Añade una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def post(self, request):
+        print(request.data)
+        serializador = EspecialidadSerializer(data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class especialidadPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de una Especialidad",
+        description="Modifica una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def put(self, request, pk):
+        especialidad = Especialidad.objects.get(pk=pk)
+        serializador = EspecialidadSerializer(especialidad, data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class especialidadDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Especialidad",
+        description="Elimina una especialidad en la BBDD",
+        request=EspecialidadSerializer,
+        responses=EspecialidadSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        especialidad = get_object_or_404(Especialidad, pk=pk)
+        especialidad.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class todasAseguradorasView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="GET de todas las Aseguradoras",
+        description="Consigue todas las aseguradoras de la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer(many=True),
+    )
+    def get(self, request):
+        aseguradoras = Aseguradora.objects.all()
+        serializador = AseguradoraSerializer(aseguradoras, many=True)
+        return Response(serializador.data)
+
+@extend_schema(
+        summary="GET de Aseguradoras filtradas",
+        description="GET de todas las Aseguradoras filtradas en la BBDD",
+        responses=AseguradoraSerializer(many=True),
+)
+class todasAseguradorasListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    queryset = Aseguradora.objects.all().order_by("id")
+
+    serializer_class = AseguradoraSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "nombre",
+    ]
+
+    search_fields = [
+        "nombre",
+    ]
+
+class aseguradoraGetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de una Aseguradora",
+        description="Consigue una las especialidad de la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer(many=False),
+    )
+    def get(self, request, pk):
+        aseguradora = Aseguradora.objects.get(pk=pk)
+        serializador = AseguradoraSerializer(aseguradora, many=False)
+        return Response(serializador.data)
+
+class aseguradoraPostView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="POST de una Aseguradora",
+        description="Añade una aseguradora en la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer,
+    )
+    def post(self, request):
+        print(request.data)
+        serializador = AseguradoraSerializer(data=request.data)
+        print("PASA")
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializador.errors)
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class aseguradoraPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de una Aseguradora",
+        description="Modifica una aseguradora en la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer,
+    )
+    def put(self, request, pk):
+        aseguradora = Aseguradora.objects.get(pk=pk)
+        serializador = AseguradoraSerializer(aseguradora, data=request.data)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class aseguradoraDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="DELETE de una Aseguradora",
+        description="Elimina una aseguradora en la BBDD",
+        request=AseguradoraSerializer,
+        responses=AseguradoraSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        aseguradora = get_object_or_404(Aseguradora, pk=pk)
+        aseguradora.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+@extend_schema(
+        summary="GET de Recepcionistas filtrados",
+        description="GET de todas los Recepcionistas filtradas en la BBDD",
+        responses=RecepcionistaSerializer(many=True),
+)
+class todosRecepcionistasListView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    queryset = Recepcionista.objects.all().order_by("id")
+
+    serializer_class = RecepcionistaSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        "nombre",
+    ]
+
+    search_fields = [
+        "nombre",
+        "primerApellido",
+        "segundoApellido",
+    ]
+
+class registrarseRecepcionistaView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="POST de un Recepcionista",
+        description="Registra un usuario y un recepcionista en la BBDD",
+    )
+    @transaction.atomic
+    def post(self, request):
+        print(request.data)
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        print(uid)
+        print(token)
+        try:
+            usuarioId = urlsafe_base64_decode(uid).decode()
+            usuario = Usuario.objects.get(pk=usuarioId)
+            print(usuario.__dict__)
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            return Response({"mensaje": "El enlace no es válido"}, status=status.HTTP_400_BAD_REQUEST)
+        usuario.username = request.data["documentoIdentidad"]
+        usuario.first_name = request.data["nombre"]
+        usuario.last_name = request.data["primerApellido"]
+        usuario.set_password(request.data["password"])
+        usuario.is_active = True
+        usuario.save()
+        
+        request.data["correo"] = usuario.email
+        request.data["usuarioBase"] = usuario.pk
+        
+        serializador = RecepcionistaSerializer(data=request.data)
+        
+        if serializador.is_valid():
+            serializador.save()
+            print(serializador.data)
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class recepcionistaGetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de un Recepcionista",
+        description="Consigue un recepcionista de la BBDD",
+        request=RecepcionistaSerializer,
+        responses=RecepcionistaSerializer(many=False),
+    )
+    def get(self, request, pk):
+        recepcionista = Recepcionista.objects.get(pk=pk)
+        serializador = RecepcionistaSerializer(recepcionista, many=False)
+        return Response(serializador.data)
+
+class recepcionistaPutView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary="PUT de un Recepcionista",
+        description="Modifica un recepcionista en la BBDD",
+        request=RecepcionistaSerializer,
+        responses=RecepcionistaSerializer,
+    )
+    def put(self, request, pk):
+        recepcionista = Recepcionista.objects.get(pk=pk)
+        datos = request.data.copy()
+        print(datos)
+        print(recepcionista.usuarioBase.id)
+        datos["usuarioBase"] = recepcionista.usuarioBase.id
+        datos["correo"] = recepcionista.usuarioBase.email
+        serializador = RecepcionistaSerializer(recepcionista, data=datos)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class recepcionistaDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        summary="DELETE de un Recepcionista",
+        description="Elimina un recepcionista en la BBDD",
+        request=RecepcionistaSerializer,
+        responses=RecepcionistaSerializer,
+    )
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        recepcionista = get_object_or_404(Recepcionista, pk=pk)
+        recepcionista.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 
 class invitarUsuarioView(APIView):
     permission_classes = [IsAuthenticated]
