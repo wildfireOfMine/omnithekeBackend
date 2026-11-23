@@ -174,6 +174,26 @@ class crearCitaView(APIView):
             print(serializador.errors);
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class confirmarCitaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="PATCH de una cita",
+        description="Confirma una cita en la BD",
+        request=CitaSerializer,
+        responses=CitaSerializer(many=True),
+    )
+    def patch(self, request, pk):
+        cita = Cita.objects.get(pk=pk)
+
+        serializador = CitaSerializer(cita, data=request.data, partial=True)
+        if serializador.is_valid():
+            cita = serializador.save()
+            return Response(serializador.data, status=status.HTTP_200_OK)
+        else:
+            print(serializador.errors);
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @extend_schema(
     summary="GET de tus Citas como Doctor de Hoy",
     description="Consigue las citas que tienes programadas para hoy",
@@ -190,6 +210,30 @@ class citasDeTuDoctorView(generics.ListAPIView):
         fechaHoy = timezone.localdate()
 
         return Cita.objects.filter(fechaInicio__date=fechaHoy, calendario__doctor__usuarioBase=usuarioId)
+
+@extend_schema(
+    summary="GET de todas las Citas ",
+    description="Consigue las citas que están programadas para hoy generalmente",
+    responses=CitaSerializer(many=True),
+)
+class todasLasCitasParaHoyView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    serializer_class = CitaSerializer
+
+
+    def get_queryset(self):
+        fechaHoy = timezone.localdate()
+
+        return Cita.objects.filter(fechaInicio__date=fechaHoy).annotate(
+            ordenEstado=Case(
+                When(estado="pendiente", then=Value(0)),
+                When(estado="confirmada", then=Value(1)),
+                When(estado="completada", then=Value(2)),
+                default=Value(3),
+                output_field=IntegerField()
+            )
+        ).order_by("ordenEstado", "fechaInicio")
 
 
 class misHorariosView(APIView):

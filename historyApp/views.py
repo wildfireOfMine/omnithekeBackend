@@ -107,7 +107,7 @@ class nuevaConsultaView(APIView):
         print("PASA")
         if serializador.is_valid():
             cita = Cita.objects.get(pk=request.data["cita"])
-            cita.estado = "confirmada"
+            cita.estado = "completada"
             cita.save()
             serializador.save()
             return Response(serializador.data, status=status.HTTP_201_CREATED)

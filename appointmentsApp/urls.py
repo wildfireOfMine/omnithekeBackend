@@ -11,6 +11,8 @@ urlpatterns = [
     path('cancelarCita/<int:pk>/', views.cancelarCitaView.as_view()),
     path('nuevaCita/', views.crearCitaView.as_view()),
     path('misCitasDoctorHoy/', views.citasDeTuDoctorView.as_view()),
+    path('todasCitasHoy/', views.todasLasCitasParaHoyView.as_view()),
+    path('confirmarCita/<int:pk>/', views.confirmarCitaView.as_view()),
 
     path('misHorarios/', views.misHorariosView.as_view()),
     path('horariosDisponibles/<int:pk>/', views.horariosView.as_view()),
