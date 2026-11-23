@@ -7,7 +7,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from appointmentsApp.serializers import CitaSerializer, HorarioSerializer, CalendarioSerializer
+from appointmentsApp.serializers import CitaSerializer, HorarioSerializer, CalendarioSerializer, HorariosDisponiblesSerializer
 from rest_framework import generics
 from rest_framework import permissions, status
 from datetime import datetime, time, timedelta
@@ -252,6 +252,12 @@ class crearHorariosView(APIView):
 class horasDisponiblesView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="GET de Horas Disponibles en el Calendario de un Doctor",
+        description="Consigue las horas disponibles en el Calendario de un Doctor",
+        request=HorariosDisponiblesSerializer,
+        responses=HorariosDisponiblesSerializer(many=True)
+    )
     def get(self, request, pk, fecha):
 
         fechaEscogida = datetime.strptime(fecha, "%Y-%m-%d").date()
@@ -268,16 +274,20 @@ class horasDisponiblesView(APIView):
             horaInicio = horario.horaInicio.hour
             horaFin = horario.horaFin.hour
 
+            horaActual = timezone.localtime()
+
             for hora in range(horaInicio, horaFin):
 
                 inicioSlot = datetime.combine(fechaEscogida, time(hour=hora))
-                inicioSlot = make_aware(inicioSlot, get_current_timezone())
+                inicioSlot = timezone.make_aware(inicioSlot, timezone.get_current_timezone())
+
                 finSlot = inicioSlot + timedelta(hours=1)
 
-                citaOcupada = citas.filter(fechaInicio__lt=finSlot, fechaFin__gt=inicioSlot).exists()
+                if inicioSlot > horaActual:
+                    citaOcupada = citas.filter(fechaInicio__lt=finSlot, fechaFin__gt=inicioSlot).exists()
 
-                if not citaOcupada:
-                    horasDisponibles.append(f"{hora:02d}:00")
+                    if not citaOcupada:
+                        horasDisponibles.append(f"{hora:02d}:00")
 
             return Response(horasDisponibles)
     

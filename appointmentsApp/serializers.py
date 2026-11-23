@@ -28,3 +28,7 @@ class CitaSerializer(serializers.ModelSerializer):
     def get_pacienteNombre(self, obj):
         paciente = obj.paciente
         return f"{paciente.nombre} {paciente.primerApellido}"
+
+class HorariosDisponiblesSerializer(serializers.Serializer):
+    calendario = serializers.IntegerField(source="calendario.id")
+    fechaEscogida = serializers.DateField()
