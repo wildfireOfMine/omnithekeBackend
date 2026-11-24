@@ -1,6 +1,7 @@
+from django.db.models import ProtectedError
 from django.shortcuts import render, get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, EncuestaSerializer
+from usersApp.serializers import TokenSerializer, DoctorSerializer, RegistrarseSerializer, EspecialidadSerializer, AseguradoraSerializer, DocumentoSerializer, RecepcionistaSerializer, EncuestaSerializer, PacienteSerializer
 from usersApp.models import Usuario
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -11,7 +12,7 @@ from django.db import transaction
 from rest_framework import permissions, status
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-from usersApp.models import Doctor, Especialidad, Aseguradora, Recepcionista
+from usersApp.models import Doctor, Especialidad, Aseguradora, Recepcionista, Paciente
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -674,6 +675,47 @@ class recepcionistaDeleteView(APIView):
         recepcionista = get_object_or_404(Recepcionista, pk=pk)
         recepcionista.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class pacienteGetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de un Paciente",
+        description="Consigue un paciente de la BBDD",
+        request=PacienteSerializer,
+        responses=PacienteSerializer(many=False),
+    )
+    def get(self, request, pk):
+        paciente = Paciente.objects.get(documentoIdentidad=pk)
+        serializador = PacienteSerializer(paciente, many=False)
+        return Response(serializador.data)
+
+class pacienteDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        summary="DELETE de un Paciente",
+        description="Elimina un paciente en la BBDD",
+        request=PacienteSerializer,
+        responses=PacienteSerializer,
+    )
+    @transaction.atomic
+    def delete(self, request, pk):
+        print(pk)
+        print(request.data)
+        paciente = get_object_or_404(Paciente, pk=pk)
+        usuario = paciente.usuarioBase
+        try:
+            paciente.delete()
+            usuario.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except ProtectedError:
+            usuario.is_active = False
+            usuario.save(update_fields=["is_active"])
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 

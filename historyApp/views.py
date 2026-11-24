@@ -91,6 +91,24 @@ class todasConsultasDoctorView(generics.ListAPIView):
     def get_queryset(self):
         return super().get_queryset().filter(doctor__usuarioBase=self.request.user)
 
+class consultaGetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="GET de una Consulta",
+        description="Consigue en la BBDD una Consulta",
+        request=ConsultaSerializer,
+        responses=ConsultaSerializer
+    )
+    def get(self, request, pk):
+        print(self)
+        print(request)
+        print(pk)
+        consulta = Consulta.objects.get(pk=pk)
+        print(consulta)
+        serializador = ConsultaSerializer(consulta)
+        return Response(serializador.data, status=status.HTTP_201_CREATED)
+
 class nuevaConsultaView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -109,6 +127,28 @@ class nuevaConsultaView(APIView):
             cita = Cita.objects.get(pk=request.data["cita"])
             cita.estado = "completada"
             cita.save()
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializador.errors)
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class consultaPatchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="PATCH de una Consulta",
+        description="Modifica en la BBDD una Consulta",
+        request=ConsultaSerializer,
+        responses=ConsultaSerializer(many=False),
+    )
+    def patch(self, request, pk):
+        print(request)
+        print(request.data)
+        consulta = Consulta.objects.get(pk=pk)
+        print(consulta)
+        serializador = ConsultaSerializer(instance=consulta, data=request.data, partial=True)
+        if serializador.is_valid():
             serializador.save()
             return Response(serializador.data, status=status.HTTP_201_CREATED)
         else:

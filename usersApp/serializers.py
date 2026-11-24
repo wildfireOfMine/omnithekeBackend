@@ -205,6 +205,11 @@ class TokenSerializer(TokenObtainPairSerializer):
 
         return data
 
+class PacienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Paciente
+        fields = "__all__"
+
 class DoctorSerializer(serializers.ModelSerializer):
     especialidad = serializers.PrimaryKeyRelatedField(queryset=Especialidad.objects.all())
     nombreEspecialidad = serializers.CharField(source="especialidad.nombre", read_only=True)
