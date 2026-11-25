@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 from appointmentsApp.models import Cita
 from historyApp.models import Consulta
+from usersApp.permissions import SinPenalizar
 import secrets
 
 
@@ -288,7 +289,7 @@ class registrarseDoctorView(APIView):
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class doctorView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, SinPenalizar]
 
     @extend_schema(
         summary="GET de un Doctor",
@@ -689,6 +690,25 @@ class pacienteGetView(APIView):
         paciente = Paciente.objects.get(documentoIdentidad=pk)
         serializador = PacienteSerializer(paciente, many=False)
         return Response(serializador.data)
+
+class pacientePatchView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        summary="PATCH de una Aseguradora",
+        description="Modifica una aseguradora en la BBDD",
+        request=PacienteSerializer,
+        responses=PacienteSerializer,
+    )
+    def put(self, request, pk):
+        paciente = Paciente.objects.get(pk=pk)
+        serializador = PacienteSerializer(paciente, data=request.data, partial=True)
+        if serializador.is_valid():
+            serializador.save()
+            return Response(serializador.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class pacienteDeleteView(APIView):
     permission_classes = [IsAuthenticated]

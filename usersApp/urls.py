@@ -36,6 +36,7 @@ urlpatterns = [
     path('recepcionistaPut/<int:pk>/', views.recepcionistaPutView.as_view()),
     path('recepcionistaDelete/<int:pk>/', views.recepcionistaDeleteView.as_view()),
     path('pacienteGet/<str:pk>/', views.pacienteGetView.as_view()),
+    path('pacientePatch/<int:pk>/', views.pacientePatchView.as_view()),
     path('pacienteDelete/<int:pk>/', views.pacienteDeleteView.as_view()),
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),

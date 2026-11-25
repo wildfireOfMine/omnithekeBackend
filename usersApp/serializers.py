@@ -206,6 +206,11 @@ class TokenSerializer(TokenObtainPairSerializer):
         return data
 
 class PacienteSerializer(serializers.ModelSerializer):
+    citasSinAsistir = serializers.SerializerMethodField()
+
+    def get_citasSinAsistir(self, obj):
+        return obj.citas.filter(estado="no_asistio").count()
+
     class Meta:
         model = Paciente
         fields = "__all__"

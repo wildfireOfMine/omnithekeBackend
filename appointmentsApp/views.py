@@ -16,6 +16,7 @@ from django.db import transaction
 from django.db.models import Case, DateTimeField, When, Value, IntegerField, F
 from django.core.mail import send_mail
 from datetime import datetime
+from usersApp.permissions import SinPenalizar
 from django.utils.timezone import make_aware, get_current_timezone
 
 # Create your views here.
@@ -138,7 +139,7 @@ class cancelarCitaView(APIView):
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class crearCitaView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, SinPenalizar]
 
     @extend_schema(
         summary="POST de una cita",
@@ -294,7 +295,7 @@ class crearHorariosView(APIView):
             return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class horasDisponiblesView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, SinPenalizar]
 
     @extend_schema(
         summary="GET de Horas Disponibles en el Calendario de un Doctor",
