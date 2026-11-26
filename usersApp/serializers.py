@@ -205,6 +205,16 @@ class TokenSerializer(TokenObtainPairSerializer):
 
         return data
 
+class PacienteSerializer(serializers.ModelSerializer):
+    citasSinAsistir = serializers.SerializerMethodField()
+
+    def get_citasSinAsistir(self, obj):
+        return obj.citas.filter(estado="no_asistio").count()
+
+    class Meta:
+        model = Paciente
+        fields = "__all__"
+
 class DoctorSerializer(serializers.ModelSerializer):
     especialidad = serializers.PrimaryKeyRelatedField(queryset=Especialidad.objects.all())
     nombreEspecialidad = serializers.CharField(source="especialidad.nombre", read_only=True)
@@ -229,6 +239,10 @@ class DoctorSerializer(serializers.ModelSerializer):
         correo = correo.strip().lower()
 
         usuariosExistentes = Usuario.objects.filter(email__iexact=correo).exclude(username__startswith="Invitado:")
+
+        if self.instance:
+            usuariosExistentes = usuariosExistentes.exclude(pk=self.instance.usuarioBase_id)
+
 
         if usuariosExistentes.exists():
             raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
@@ -293,6 +307,9 @@ class RecepcionistaSerializer(serializers.ModelSerializer):
         correo = correo.strip().lower()
 
         usuariosExistentes = Usuario.objects.filter(email__iexact=correo).exclude(username__startswith="Invitado:")
+
+        if self.instance:
+            usuariosExistentes = usuariosExistentes.exclude(pk=self.instance.usuarioBase_id)
 
         if usuariosExistentes.exists():
             raise serializers.ValidationError("Ya existe una cuenta registrada con este correo electrónico")
@@ -368,3 +385,11 @@ class UsuarioSerializer(serializers.Serializer):
     class Meta:
             model = Usuario
             fields = "__all__"
+
+class EncuestaSerializer(serializers.Serializer):
+    usuariosRegistrados = serializers.IntegerField()
+    doctoresRegistrados = serializers.IntegerField()
+    citasMensuales = serializers.IntegerField()
+    citasPendientes = serializers.IntegerField() 
+    consultasRealizadas = serializers.IntegerField()
+    citasCanceladas = serializers.IntegerField()

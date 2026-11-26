@@ -6,12 +6,16 @@ from usersApp import views
 urlpatterns = [
     path('login/', views.ObtenerToken.as_view()),
     path('registrarse/', views.registrarseView.as_view()),
-    path('registrarseDoctor/', views.registrarseDoctorView.as_view()),
     path('confirmarCuenta/', views.confirmarCuentaView.as_view()),
     path('solicitarRecuperacion/', views.solicitarRecuperacionView.as_view()),
     path('restablecerContrasena/', views.restablecerContrasenaView.as_view()),
 
     path('todosDoctores/', views.todosDoctoresView.as_view()),
+    path('registrarseDoctor/', views.registrarseDoctorView.as_view()),
+    path('doctor/<int:pk>/', views.doctorView.as_view()),
+    path('doctorPut/<int:pk>/', views.doctorPutView.as_view()),
+    path('doctorDelete/<int:pk>/', views.doctorDeleteView.as_view()),
+
     path('especialidades/', views.todasEspecialidadesView.as_view()),
     path('especialidadesList/', views.todasEspecialidadesListView.as_view()),
     path('especialidadGet/<int:pk>/', views.especialidadGetView.as_view()),
@@ -21,10 +25,20 @@ urlpatterns = [
 
     path('aseguradoras/', views.todasAseguradorasView.as_view()),
     path('aseguradorasList/', views.todasAseguradorasListView.as_view()),
+    path('aseguradoraGet/<int:pk>/', views.aseguradoraGetView.as_view()),
     path('aseguradoraPost/', views.aseguradoraPostView.as_view()),
+    path('aseguradoraPut/<int:pk>/', views.aseguradoraPutView.as_view()),
+    path('aseguradoraDelete/<int:pk>/', views.aseguradoraDeleteView.as_view()),
+
     path('recepcionistasList/', views.todosRecepcionistasListView.as_view()),
     path('registrarseRecepcionista/', views.registrarseRecepcionistaView.as_view()),
-    path('doctor/<int:pk>/', views.doctorView.as_view()),
+    path('recepcionistaGet/<int:pk>/', views.recepcionistaGetView.as_view()),
+    path('recepcionistaPut/<int:pk>/', views.recepcionistaPutView.as_view()),
+    path('recepcionistaDelete/<int:pk>/', views.recepcionistaDeleteView.as_view()),
+    path('pacienteGet/<str:pk>/', views.pacienteGetView.as_view()),
+    path('pacientePatch/<int:pk>/', views.pacientePatchView.as_view()),
+    path('pacienteDelete/<int:pk>/', views.pacienteDeleteView.as_view()),
     
     path('invitarUsuario/', views.invitarUsuarioView.as_view()),
+    path('estadisticas/', views.estadisticasView.as_view()),
 ]

@@ -88,6 +88,7 @@ class Paciente(Persona):
         null=True
     )
     aseguradoras = models.ManyToManyField(Aseguradora, related_name="pacientes", blank=True)
+    penalizado = models.BooleanField(default=False)
 
     def __str__(self):
             return f"Paciente: {self.primerApellido}, {self.nombre}"

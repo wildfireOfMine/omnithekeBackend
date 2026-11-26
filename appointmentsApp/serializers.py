@@ -2,6 +2,16 @@ from rest_framework import serializers
 from appointmentsApp.models import Cita, Horario, Calendario
 from usersApp.models import Doctor
 
+class CalendarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Calendario
+        fields = "__all__"
+
+class HorarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Horario
+        fields = "__all__"
+
 class CitaSerializer(serializers.ModelSerializer):
     doctor = serializers.IntegerField(source="calendario.doctor.id", read_only=True)
     doctorNombre = serializers.SerializerMethodField()
@@ -19,12 +29,6 @@ class CitaSerializer(serializers.ModelSerializer):
         paciente = obj.paciente
         return f"{paciente.nombre} {paciente.primerApellido}"
 
-class CalendarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Calendario
-        fields = "__all__"
-
-class HorarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Horario
-        fields = "__all__"
+class HorariosDisponiblesSerializer(serializers.Serializer):
+    calendario = serializers.IntegerField(source="calendario.id")
+    fechaEscogida = serializers.DateField()
